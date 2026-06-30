@@ -1,0 +1,6 @@
+.DS_Store
+.gstack/
+.claude/
+# 작업 버전 원본은 배포에서 제외 (데모는 index.html)
+brain-study-game.html
+brain-study-game_v*.html
