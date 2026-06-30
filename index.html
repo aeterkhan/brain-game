@@ -236,6 +236,52 @@
   .feedline{font-family:'Gaegu',cursive;font-size:1.18rem;color:var(--teal);margin-top:14px;min-height:1.4em}
   .feedline.warn-t{color:var(--amber)}
 
+  /* ---------- stamps / history (출석 도장) ---------- */
+  .stampcard{margin:22px 0;padding:18px;border-radius:16px;background:var(--card-2);border:1px solid var(--line)}
+  .stamphead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+  .stamphead h2{margin:0;font-size:1.12rem}
+  .seehist{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.04em;color:var(--teal);background:none;border:none;cursor:pointer;font-weight:700;padding:0}
+  .seehist:hover{text-decoration:underline}
+  .stampstat{font-size:.94rem;color:var(--ink-soft)}
+  .stampstat b{color:var(--teal)}
+  .todaystamp{display:flex;align-items:center;gap:14px;background:var(--card);border:1px dashed var(--teal);border-radius:14px;padding:13px 15px;margin-bottom:14px}
+  .todaystamp .big{width:48px;height:48px;flex:none}
+  .todaystamp .big .seal2{width:100%;height:100%;font-size:1.6rem}
+  .todaystamp .tcap b{font-family:'Gowun Batang',serif;font-size:1.04rem}
+  .todaystamp .tcap span{display:block;font-size:.82rem;color:var(--ink-soft);margin-top:2px}
+
+  .stamprow{display:flex;gap:10px;margin:20px 0}
+  .statbox{flex:1;background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:15px 8px;text-align:center}
+  .statbox .bignum{font-family:'Gowun Batang',serif;font-weight:700;font-size:1.75rem;color:var(--teal);line-height:1}
+  .statbox .statlbl{font-size:.74rem;color:var(--ink-soft);margin-top:6px}
+  .viewtoggle{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:18px 0 16px;width:max-content}
+  .viewtoggle .seg{font:inherit;font-weight:700;font-size:.9rem;border:none;background:var(--card);color:var(--ink-soft);padding:9px 24px;cursor:pointer;transition:.2s}
+  .viewtoggle .seg.on{background:var(--teal);color:#fff}
+  .calnav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px}
+  .calnav .navbtn{font:inherit;font-size:1.2rem;line-height:1;border:1px solid var(--line);background:var(--card);color:var(--ink);width:34px;height:34px;border-radius:9px;cursor:pointer;display:grid;place-items:center}
+  .calnav .navbtn:hover:not(:disabled){border-color:var(--teal);color:var(--teal)}
+  .calnav .navbtn:disabled{opacity:.32;cursor:not-allowed}
+  .calnav .callabel{font-family:'Gowun Batang',serif;font-weight:700;font-size:1.1rem;min-width:130px;text-align:center}
+  .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+  .calhead div{text-align:center;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.04em;color:var(--ink-soft)}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cell{position:relative;aspect-ratio:1;border-radius:10px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center}
+  .cell.empty{border:none;background:transparent}
+  .cell .dnum{position:absolute;top:4px;left:6px;font-family:'Space Mono',monospace;font-size:.56rem;color:var(--dim)}
+  .cell.stamped{background:var(--teal-wash);border-color:var(--teal)}
+  .cell.today{box-shadow:0 0 0 2px var(--amber)}
+  .seal2{font-family:'Gaegu',cursive;font-weight:700;color:#fff;background:var(--teal);width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-size:.95rem;transform:rotate(-5deg);box-shadow:0 4px 10px -5px var(--shadow)}
+  .cell.today .seal2{background:var(--amber)}
+  .weekgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+  .wcell{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 4px 9px;text-align:center}
+  .wcell.stamped{background:var(--teal-wash);border-color:var(--teal)}
+  .wcell.today{box-shadow:0 0 0 2px var(--amber)}
+  .wcell .wdow{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--ink-soft);margin-bottom:8px}
+  .wcell .wseal{height:30px;display:grid;place-items:center;color:var(--dim);font-size:1.1rem}
+  .wcell .wdate{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--ink-soft);margin-top:7px}
+  .stamp-pop{animation:stampPop .55s cubic-bezier(.2,1.4,.4,1) both}
+  @keyframes stampPop{0%{transform:scale(0) rotate(-30deg);opacity:0}60%{transform:scale(1.18) rotate(-5deg)}100%{transform:scale(1) rotate(-5deg);opacity:1}}
+
   @media (max-width:520px){
     .wrap{padding:18px 14px 50px}
     h1{font-size:1.55rem}
@@ -379,7 +425,11 @@ const state = {
   order:[0,1,2,3,4],
   orderChecked:false,
   reps:{d1:false,d3:false,d7:false},
-  timer:{sec:25*60,running:false,id:null}
+  timer:{sec:25*60,running:false,id:null},
+  historyView:"month",
+  monthOffset:0,
+  weekOffset:0,
+  _historyFrom:"intro"
 };
 const SCREENS=["intro","stage1","stage2","stage3","stage4","stage5","result"];
 const stageEl=document.getElementById('stage');
@@ -407,10 +457,114 @@ function totalScore(){
   return {g,m,pct:m?Math.round(g/m*100):0};
 }
 
+/* ============================ STAMPS · 출석/히스토리 ============================ */
+const STAMP_KEY="baekji.stamps";
+function loadStamps(){ try{ return JSON.parse(localStorage.getItem(STAMP_KEY))||{}; }catch(_){ return {}; } }
+function saveStamps(o){ try{ localStorage.setItem(STAMP_KEY,JSON.stringify(o)); }catch(_){} }
+function dateKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function todayKey(){ return dateKey(new Date()); }
+function stampToday(){ const s=loadStamps(),k=todayKey(); s[k]=(s[k]||0)+1; saveStamps(s); }
+function stampStats(){
+  const s=loadStamps(), keys=Object.keys(s);
+  let streak=0; const d=new Date();
+  while(s[dateKey(d)]){ streak++; d.setDate(d.getDate()-1); } // 오늘부터 거슬러 연속 출석
+  const ym=todayKey().slice(0,7);
+  return { total:keys.length, streak, thisMonth:keys.filter(k=>k.startsWith(ym)).length };
+}
+function openHistory(){ state._historyFrom=state.screen; go('history'); }
+function backFromHistory(){ go(state._historyFrom||'intro'); }
+function setHistoryView(v){ state.historyView=v; rHistory(); }
+function shiftMonth(n){ state.monthOffset=Math.min(0,state.monthOffset+n); renderCal(); } // 미래 달은 막음
+function shiftWeek(n){ state.weekOffset=Math.min(0,state.weekOffset+n); renderCal(); }
+
+const DOW_KO=['월','화','수','목','금','토','일'];
+function buildMonthGrid(year,month){
+  const s=loadStamps(), tk=todayKey();
+  const startDow=(new Date(year,month,1).getDay()+6)%7; // 월요일 시작 보정
+  const days=new Date(year,month+1,0).getDate();
+  const cells=[];
+  for(let i=0;i<startDow;i++)cells.push(null);
+  for(let day=1;day<=days;day++){
+    const k=dateKey(new Date(year,month,day));
+    cells.push({day,stamped:!!s[k],today:k===tk});
+  }
+  return cells;
+}
+function buildWeekGrid(offset){
+  const s=loadStamps(), tk=todayKey();
+  const d=new Date(); d.setDate(d.getDate()+offset*7);
+  const monday=new Date(d); monday.setDate(d.getDate()-((d.getDay()+6)%7));
+  const cells=[];
+  for(let i=0;i<7;i++){
+    const cur=new Date(monday); cur.setDate(monday.getDate()+i);
+    const k=dateKey(cur);
+    cells.push({date:cur,stamped:!!s[k],today:k===tk});
+  }
+  return cells;
+}
+function monthHTML(offset){
+  const base=new Date(); base.setDate(1); base.setMonth(base.getMonth()+offset);
+  const y=base.getFullYear(), m=base.getMonth();
+  const cells=buildMonthGrid(y,m);
+  return `
+    <div class="calnav">
+      <button class="navbtn" onclick="shiftMonth(-1)" aria-label="이전 달">‹</button>
+      <div class="callabel">${y}년 ${m+1}월</div>
+      <button class="navbtn" onclick="shiftMonth(1)" aria-label="다음 달" ${offset>=0?'disabled':''}>›</button>
+    </div>
+    <div class="calhead">${DOW_KO.map(x=>`<div>${x}</div>`).join('')}</div>
+    <div class="calgrid">${cells.map(c=>{
+      if(!c)return '<div class="cell empty"></div>';
+      return `<div class="cell ${c.stamped?'stamped':''} ${c.today?'today':''}"><span class="dnum">${c.day}</span>${c.stamped?'<span class="seal2">出</span>':''}</div>`;
+    }).join('')}</div>`;
+}
+function weekHTML(offset){
+  const cells=buildWeekGrid(offset);
+  const a=cells[0].date, b=cells[6].date;
+  const label=`${a.getMonth()+1}/${a.getDate()} ~ ${b.getMonth()+1}/${b.getDate()}`;
+  return `
+    <div class="calnav">
+      <button class="navbtn" onclick="shiftWeek(-1)" aria-label="이전 주">‹</button>
+      <div class="callabel">${label}</div>
+      <button class="navbtn" onclick="shiftWeek(1)" aria-label="다음 주" ${offset>=0?'disabled':''}>›</button>
+    </div>
+    <div class="weekgrid">${cells.map((c,i)=>`
+      <div class="wcell ${c.stamped?'stamped':''} ${c.today?'today':''}">
+        <div class="wdow">${DOW_KO[i]}</div>
+        <div class="wseal">${c.stamped?'<span class="seal2">出</span>':'·'}</div>
+        <div class="wdate">${c.date.getMonth()+1}/${c.date.getDate()}</div>
+      </div>`).join('')}</div>`;
+}
+function renderCal(){
+  const wrap=document.getElementById('calwrap'); if(!wrap)return;
+  wrap.innerHTML = state.historyView==='week' ? weekHTML(state.weekOffset) : monthHTML(state.monthOffset);
+}
+function rHistory(){
+  const st=stampStats(), view=state.historyView;
+  stageEl.innerHTML=`
+    <div class="eyebrow"><span>출석 기록</span></div>
+    <h1>나의 출석부</h1>
+    <p class="lead">5단계를 완주한 날마다 <b style="color:var(--teal)">出 도장</b>이 찍힙니다. 꾸준히 꺼내는 것이 곧 간격 반복이에요.</p>
+    <div class="stamprow">
+      <div class="statbox"><div class="bignum">${st.streak}</div><div class="statlbl">일 연속 🔥</div></div>
+      <div class="statbox"><div class="bignum">${st.thisMonth}</div><div class="statlbl">이번 달</div></div>
+      <div class="statbox"><div class="bignum">${st.total}</div><div class="statlbl">누적 출석</div></div>
+    </div>
+    <div class="viewtoggle">
+      <button class="seg ${view==='week'?'on':''}" onclick="setHistoryView('week')">주간</button>
+      <button class="seg ${view==='month'?'on':''}" onclick="setHistoryView('month')">월간</button>
+    </div>
+    <div id="calwrap"></div>
+    <div class="actions">
+      <button class="btn btn-primary grow" onclick="backFromHistory()">← 돌아가기</button>
+    </div>`;
+  renderCal();
+}
+
 /* ============================ RENDER ROUTER ============================ */
 function render(){
   renderTrack();
-  ({intro:rIntro,stage1:rStage1,stage2:rStage2,stage3:rStage3,stage4:rStage4,stage5:rStage5,result:rResult})[state.screen]();
+  ({intro:rIntro,stage1:rStage1,stage2:rStage2,stage3:rStage3,stage4:rStage4,stage5:rStage5,result:rResult,history:rHistory})[state.screen]();
   // 단계 전환 시 항상 맨 위(진행도 트래커)부터 보이도록 — 카드 중간에 걸치지 않게
   requestAnimationFrame(()=>{
     try{window.scrollTo(0,0);}catch(_){}
@@ -475,6 +629,7 @@ function rIntro(){
     </div>
     <div class="actions">
       <button class="btn btn-primary grow" onclick="go('stage1')">백지의 방에 들어가기 →</button>
+      <button class="btn btn-ghost" onclick="openHistory()">📅 출석부</button>
     </div>`;
 }
 
@@ -832,11 +987,12 @@ function checkOrder(){
   document.getElementById('s5next').disabled=false;
   setScore("s5",correct,5);
 }
-function finishStage5(){ go('result'); }
+function finishStage5(){ stampToday(); go('result'); }
 
 /* ---------- RESULT ---------- */
 function rResult(){
   const {g,m,pct}=totalScore();
+  const st=stampStats();
   let grade,gmsg;
   if(pct>=90){grade="기억 점화 완료";gmsg="5단계가 손끝에서 자동으로 나옵니다. 이제 진짜 교과서에 그대로 적용해 보세요."}
   else if(pct>=70){grade="단단해지는 중";gmsg="핵심 흐름은 잡혔어요. 빠진 조각은 내일 한 번 더 꺼내면 자리잡습니다."}
@@ -850,6 +1006,15 @@ function rResult(){
     <div class="meter">
       <div class="mhead"><div class="mscore">${g}<small> / ${m}점</small></div><div class="tag">기억 강도</div></div>
       <div class="bar"><div class="fill" id="fill"></div></div>
+    </div>
+
+    <div class="stampcard">
+      <div class="todaystamp">
+        <div class="big"><span class="seal2 stamp-pop">出</span></div>
+        <div class="tcap"><b>오늘 출석 도장 찍힘!</b><span>5단계를 완주한 날마다 도장이 쌓입니다.</span></div>
+      </div>
+      <div class="stamphead"><h2>출석 현황</h2><button class="seehist" onclick="openHistory()">전체 출석부 보기 →</button></div>
+      <div class="stampstat">🔥 <b>${st.streak}일</b> 연속 · 이번 달 <b>${st.thisMonth}번</b> · 누적 <b>${st.total}일</b></div>
     </div>
 
     <div class="spacing">
