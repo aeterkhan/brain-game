@@ -2,6 +2,9 @@
 
 > **넣지 말고, 꺼내라.** — 뇌과학 공부법을 글로 읽는 대신, 5단계로 직접 손에 익히는 인터랙티브 학습 게임.
 
+[![Live Demo](https://img.shields.io/badge/▶_데모_플레이-백지의_방-0F766E?style=for-the-badge&logo=github)](https://aeterkhan.github.io/brain-game/)
+[![Deploy to GitHub Pages](https://github.com/aeterkhan/brain-game/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/aeterkhan/brain-game/actions/workflows/deploy-pages.yml)
+
 **▶ 데모: https://aeterkhan.github.io/brain-game/**
 
 ![백지의 방 커버](docs/img/cover.png)
