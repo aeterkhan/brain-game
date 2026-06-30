@@ -737,6 +737,10 @@ function renderSeq(){
 }
 let DRAG=null;
 const REDUCE=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+/* 드래그 설계 원칙: 드래그 중에는 DOM 순서를 바꾸지 않는다.
+   누적 이동량(dy/step)으로 목표 인덱스만 계산해 다른 항목을 transform으로
+   비켜주고, 손을 놓는 순간에 딱 한 번 순서를 재계산해 다시 그린다.
+   → DOM 재배열 + 실시간 측정이 만들던 경계 진동("밀림")이 원천 제거된다. */
 function startDrag(e){
   if(state.orderChecked)return;
   const item=e.target.closest('.seqitem');
@@ -746,9 +750,15 @@ function startDrag(e){
   // 헤더·여백·버튼 영역에서만 페이지 스크롤이 되도록 CSS에서 분리했다.
   e.preventDefault();
   const seq=document.getElementById('seq');
-  DRAG={item,seq,startY:e.clientY,pid:e.pointerId};
+  const items=[...seq.children];
+  const rects=items.map(el=>el.getBoundingClientRect());
+  const startIndex=items.indexOf(item);
+  // 슬롯 간격 = 인접 항목 top 차이(=높이+gap). 항목 높이가 균일하므로 고정값으로 충분.
+  const step=rects.length>1 ? Math.abs(rects[1].top-rects[0].top) : rects[startIndex].height+10;
+  DRAG={item,seq,items,startIndex,curIndex:startIndex,n:items.length,step,startY:e.clientY,pid:e.pointerId};
   item.classList.add('dragging');
   item.style.transition='none';
+  item.style.zIndex='30';
   try{item.setPointerCapture(e.pointerId);}catch(_){}
   item.addEventListener('pointermove',onDrag);
   item.addEventListener('pointerup',endDrag);
@@ -758,59 +768,49 @@ function onDrag(e){
   if(!DRAG)return;
   e.preventDefault();
   const dy=e.clientY-DRAG.startY;
-  DRAG.item.style.transform=`translateY(${dy}px)`;
-  DRAG.item.style.zIndex='20';
-  const r=DRAG.item.getBoundingClientRect();
-  const center=r.top+r.height/2;
-  const items=[...DRAG.seq.children];
-  for(const it of items){
-    if(it===DRAG.item)continue;
-    const ir=it.getBoundingClientRect();
-    if(center>ir.top && center<ir.bottom){
-      const others=items.filter(x=>x!==DRAG.item);
-      const before=REDUCE?null:new Map(others.map(o=>[o,o.getBoundingClientRect().top]));
-      const di=items.indexOf(DRAG.item), ti=items.indexOf(it);
-      if(di<ti) DRAG.seq.insertBefore(DRAG.item, it.nextSibling);
-      else DRAG.seq.insertBefore(DRAG.item, it);
-      DRAG.startY=e.clientY;
-      DRAG.item.style.transform='';
-      if(!REDUCE){ // 비켜나는 카드들 부드럽게 슬라이드 (FLIP)
-        others.forEach(o=>{
-          const shift=before.get(o)-o.getBoundingClientRect().top;
-          if(shift){
-            o.style.transition='none';
-            o.style.transform=`translateY(${shift}px)`;
-            requestAnimationFrame(()=>{o.style.transition='transform .2s ease';o.style.transform='';});
-          }
-        });
-      }
-      updateRanks();
-      break;
-    }
+  DRAG.item.style.transform=`translateY(${dy}px)`; // 드래그 항목은 손가락을 그대로 따라감
+  // 누적 이동량으로 목표 슬롯 결정. round 라서 반 칸 넘어야 자리 바뀜(히스테리시스).
+  const moved=Math.round(dy/DRAG.step);
+  const target=Math.max(0,Math.min(DRAG.n-1,DRAG.startIndex+moved));
+  if(target!==DRAG.curIndex){
+    DRAG.curIndex=target;
+    applyDragShift();
   }
+}
+function applyDragShift(){
+  const {items,startIndex,curIndex,step}=DRAG;
+  items.forEach((el,oi)=>{
+    let finalPos;
+    if(oi===startIndex){
+      finalPos=curIndex; // 드래그 항목의 표시 순위(transform은 onDrag가 관리)
+    }else{
+      finalPos=oi;
+      if(oi>startIndex)finalPos--;      // 드래그 항목이 원래 자리에서 빠짐
+      if(finalPos>=curIndex)finalPos++; // 드래그 항목이 목표 슬롯에 삽입됨
+      const shift=(finalPos-oi)*step;
+      el.style.transition=REDUCE?'none':'transform .16s cubic-bezier(.2,.8,.2,1)';
+      el.style.transform= shift?`translateY(${shift}px)`:'';
+    }
+    const rk=el.querySelector('.rank');
+    if(rk)rk.textContent=finalPos+1; // 순위 숫자도 실시간 갱신
+  });
 }
 function endDrag(){
   if(!DRAG)return;
-  const it=DRAG.item;
-  it.style.zIndex='';
-  if(REDUCE){ it.style.transition=''; it.style.transform=''; }
-  else{ // 손을 놓으면 제자리로 부드럽게 안착
-    it.style.transition='transform .24s cubic-bezier(.2,.8,.2,1), box-shadow .24s ease';
-    it.style.transform='';
-    const clear=()=>{it.style.transition='';it.removeEventListener('transitionend',clear);};
-    it.addEventListener('transitionend',clear);
-  }
-  it.classList.remove('dragging');
-  try{it.releasePointerCapture(DRAG.pid);}catch(_){}
-  it.removeEventListener('pointermove',onDrag);
-  it.removeEventListener('pointerup',endDrag);
-  it.removeEventListener('pointercancel',endDrag);
-  state.order=[...DRAG.seq.children].map(c=>+c.dataset.step);
+  const {item,items,startIndex,curIndex,pid}=DRAG;
+  // 손을 놓는 순간 단 한 번 순서 재계산: startIndex 요소를 빼서 curIndex에 삽입
+  const order=items.map(el=>+el.dataset.step);
+  const [moved]=order.splice(startIndex,1);
+  order.splice(curIndex,0,moved);
+  // 인라인 스타일 정리
+  items.forEach(el=>{el.style.transition='';el.style.transform='';el.style.zIndex='';el.classList.remove('dragging');});
+  try{item.releasePointerCapture(pid);}catch(_){}
+  item.removeEventListener('pointermove',onDrag);
+  item.removeEventListener('pointerup',endDrag);
+  item.removeEventListener('pointercancel',endDrag);
   DRAG=null;
-}
-function updateRanks(){
-  const seq=document.getElementById('seq');
-  [...seq.children].forEach((c,i)=>{const rk=c.querySelector('.rank');if(rk)rk.textContent=i+1;});
+  state.order=order;
+  renderSeq(); // 깨끗하게 재렌더(순위·리스너 재등록)
 }
 function checkOrder(){
   state.orderChecked=true;
