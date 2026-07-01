@@ -6,6 +6,12 @@
 <!-- v2(게임화 강화판)는 URL을 아는 사람만: 검색엔진 노출 차단 -->
 <meta name="robots" content="noindex, nofollow" />
 <title>백지의 방 키즈 · 기억 꺼내기 대작전 (v2)</title>
+<!-- PWA: 설치형 웹앱 (오프라인 + 웹 업데이트 자동 반영) -->
+<link rel="manifest" href="manifest.json" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="백지 키즈" />
+<link rel="apple-touch-icon" href="icon-180.png" />
 <meta name="description" content="초등학생을 위한 뇌과학 공부법 게임. 넣지 말고 꺼내기! 출석 도장을 모으며 좋은 공부 습관을 만들어요." />
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3Qgd2lkdGg9JzMyJyBoZWlnaHQ9JzMyJyByeD0nOCcgZmlsbD0nIzNGQTlGNScvPjx0ZXh0IHg9JzE2JyB5PScyMycgZm9udC1zaXplPScxNycgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtZmFtaWx5PSdzYW5zLXNlcmlmJyBmb250LXdlaWdodD0nNzAwJz7ssLg8L3RleHQ+PC9zdmc+" />
 <meta name="theme-color" content="#FFF8EC" />
@@ -1471,5 +1477,13 @@ bootApp();
 <!-- 방문자 분석 (비공개 대시보드: https://brain-game.goatcounter.com) · 쿠키 없음 -->
 <script data-goatcounter="https://brain-game.goatcounter.com/count"
         async src="https://gc.zgo.at/count.js"></script>
+<!-- PWA: 서비스 워커 등록 (설치·오프라인·자동 업데이트) -->
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
 </body>
 </html>
