@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>백지의 방 키즈 · 기억 꺼내기 대작전</title>
 <meta name="description" content="초등학생을 위한 뇌과학 공부법 게임. 넣지 말고 꺼내기! 출석 도장을 모으며 좋은 공부 습관을 만들어요." />
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3Qgd2lkdGg9JzMyJyBoZWlnaHQ9JzMyJyByeD0nOCcgZmlsbD0nIzNGQTlGNScvPjx0ZXh0IHg9JzE2JyB5PScyMycgZm9udC1zaXplPScxNycgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtZmFtaWx5PSdzYW5zLXNlcmlmJyBmb250LXdlaWdodD0nNzAwJz7ssLg8L3RleHQ+PC9zdmc+" />
+<meta name="theme-color" content="#FFF8EC" />
+<!-- Open Graph (스레드·카카오톡·페이스북 공유 미리보기 카드) -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://aeterkhan.github.io/brain-game/kids/" />
+<meta property="og:title" content="백지의 방 키즈 · 기억 꺼내기 대작전" />
+<meta property="og:description" content="초등학생을 위한 뇌과학 공부법 게임 — 넣지 말고 꺼내기! 출석 도장을 모으며 좋은 공부 습관을 만들어요." />
+<meta property="og:image" content="https://aeterkhan.github.io/brain-game/docs/img/og-cover-kids.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="백지의 방 키즈 — 넣지 말고, 꺼내기! 초등학생 뇌과학 공부 습관 게임" />
+<meta property="og:locale" content="ko_KR" />
+<meta property="og:site_name" content="백지의 방 키즈" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="백지의 방 키즈 · 기억 꺼내기 대작전" />
+<meta name="twitter:description" content="초등학생을 위한 뇌과학 공부법 게임 — 넣지 말고 꺼내기!" />
+<meta name="twitter:image" content="https://aeterkhan.github.io/brain-game/docs/img/og-cover-kids.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
@@ -123,7 +141,7 @@
   .q-stem{font-family:'Jua',sans-serif;font-size:1.2rem;margin-bottom:12px;display:flex;gap:9px}
   .q-stem .qn{color:var(--blue);flex:none}
   .opt{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fff;border:3px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;font:inherit;font-size:1.08rem;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
-  .opt:hover{border-color:var(--blue)}
+  @media(hover:hover){.opt:hover{border-color:var(--blue)}}
   .opt:active{transform:scale(.98)}
   .opt:disabled{cursor:default}
   .opt .mk{width:30px;height:30px;border-radius:99px;background:var(--card-2);display:grid;place-items:center;font-family:'Jua',sans-serif;flex:none;color:var(--ink-soft)}
@@ -157,7 +175,7 @@
 
   /* ---------- reorder (stage 5) ---------- */
   .seq{display:grid;gap:11px;margin:18px 0}
-  .seqitem{display:flex;align-items:center;gap:12px;background:#fff;border:3px solid var(--line);border-radius:16px;padding:13px 14px;transition:border-color .2s,background .2s,box-shadow .2s;user-select:none;touch-action:none;-webkit-user-select:none;cursor:grab}
+  .seqitem{display:flex;align-items:center;gap:12px;background:#fff;border:3px solid var(--line);border-radius:16px;padding:13px 14px;transition:border-color .2s,background .2s,box-shadow .2s;user-select:none;touch-action:pan-y;-webkit-user-select:none}
   .seqitem .rank{width:36px;height:36px;border-radius:11px;background:var(--blue);color:#fff;font-family:'Jua',sans-serif;font-size:1.2rem;display:grid;place-items:center;flex:none}
   .seqitem .se{font-size:1.7rem;flex:none}
   .seqitem .lbl{flex:1;font-family:'Jua',sans-serif;font-size:1.12rem;pointer-events:none}
@@ -811,7 +829,7 @@ function renderSeq(){
       ${state.orderChecked?'':'<div class="handle" aria-label="드래그하여 순서 변경" title="잡고 위아래로 옮겨요">⠿</div>'}
     </div>`;
   }).join("");
-  if(!state.orderChecked) seq.querySelectorAll('.seqitem').forEach(el=>el.addEventListener('pointerdown',startDrag));
+  if(!state.orderChecked) seq.querySelectorAll('.handle').forEach(el=>el.addEventListener('pointerdown',startDrag));
 }
 let DRAG=null;
 const REDUCE=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1066,6 +1084,6 @@ render();
 </script>
 <!-- 방문자 분석 (비공개 대시보드: https://brain-game.goatcounter.com) · 쿠키 없음 -->
 <script data-goatcounter="https://brain-game.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+        async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>

@@ -4,6 +4,25 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>백지의 방 · 뇌과학 공부법 체득 게임</title>
+<meta name="description" content="넣지 말고 꺼내라 — 뇌과학이 증명한 인출 학습법을 5단계 게임으로 직접 손에 익히는 공부 도장. 출석 도장을 모으며 진짜 공부 습관을 만드세요." />
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3Qgd2lkdGg9JzMyJyBoZWlnaHQ9JzMyJyByeD0nNycgZmlsbD0nIzE2MjgyQicvPjx0ZXh0IHg9JzE2JyB5PScyNCcgZm9udC1zaXplPScyMScgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nI0ZCRjhGMScgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtd2VpZ2h0PSc3MDAnPuWHujwvdGV4dD48L3N2Zz4=" />
+<meta name="theme-color" content="#EAE3D4" />
+<!-- Open Graph (스레드·카카오톡·페이스북 공유 미리보기 카드) -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://aeterkhan.github.io/brain-game/" />
+<meta property="og:title" content="백지의 방 · 뇌과학 공부법 체득 게임" />
+<meta property="og:description" content="넣지 말고 꺼내라 — 인출 학습법을 5단계 게임으로 손에 익히는 뇌과학 공부 도장." />
+<meta property="og:image" content="https://aeterkhan.github.io/brain-game/docs/img/og-cover.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="백지의 방 — 넣지 말고, 꺼내라. 인출 학습법 5단계 공부 도장" />
+<meta property="og:locale" content="ko_KR" />
+<meta property="og:site_name" content="백지의 방" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="백지의 방 · 뇌과학 공부법 체득 게임" />
+<meta name="twitter:description" content="넣지 말고 꺼내라 — 인출 학습법을 5단계 게임으로 손에 익히는 뇌과학 공부 도장." />
+<meta name="twitter:image" content="https://aeterkhan.github.io/brain-game/docs/img/og-cover.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Gaegu:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -124,7 +143,7 @@
   .q-stem{font-weight:700;font-size:1.06rem;margin-bottom:12px;display:flex;gap:9px}
   .q-stem .qn{font-family:'Space Mono',monospace;color:var(--teal);flex:none}
   .opt{display:block;width:100%;text-align:left;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px;font:inherit;color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s,transform .1s}
-  .opt:hover{border-color:var(--teal)}
+  @media(hover:hover){.opt:hover{border-color:var(--teal)}}
   .opt:active{transform:scale(.99)}
   .opt:disabled{cursor:default}
   .opt.correct{background:var(--teal-wash);border-color:var(--teal);font-weight:700}
@@ -161,19 +180,18 @@
 
   /* ---------- reorder (stage 5) ---------- */
   .seq{display:grid;gap:10px;margin:20px 0}
-  .seqitem{display:flex;align-items:center;gap:12px;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;transition:border-color .2s,background .2s,box-shadow .2s;user-select:none;touch-action:none;-webkit-user-select:none}
+  .seqitem{display:flex;align-items:center;gap:12px;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;transition:border-color .2s,background .2s,box-shadow .2s;user-select:none;touch-action:pan-y;-webkit-user-select:none}
   .seqitem .rank{width:30px;height:30px;border-radius:8px;background:var(--ink);color:var(--card);font-family:'Space Mono',monospace;font-weight:700;display:grid;place-items:center;flex:none}
   .seqitem .lbl{flex:1;font-weight:700;font-size:1rem;pointer-events:none}
   .seqitem .lbl small{display:block;font-weight:400;font-size:.78rem;color:var(--ink-soft)}
   .handle{flex:none;width:38px;height:38px;display:grid;place-items:center;color:var(--ink-soft);font-size:1.35rem;line-height:1;cursor:grab;border-radius:9px;touch-action:none;transition:background .15s,color .15s}
-  .handle:hover{background:var(--card);color:var(--teal)}
+  @media(hover:hover){.handle:hover{background:var(--card);color:var(--teal)}}
   .seqitem.dragging{box-shadow:0 14px 30px -10px var(--shadow);border-color:var(--teal);background:var(--card);cursor:grabbing;position:relative}
   .seqitem.dragging .handle{cursor:grabbing;color:var(--teal)}
   .seqitem.right{background:var(--teal-wash);border-color:var(--teal)}
   .seqitem.right .rank{background:var(--teal)}
   .seqitem.wrong{background:#F3E0DB;border-color:var(--no)}
   .seqitem.wrong .rank{background:var(--no)}
-  .seqitem{cursor:grab}
   .seqitem.dragging{cursor:grabbing}
   .seqitem.right,.seqitem.wrong{cursor:default;touch-action:auto}
   @keyframes celebrate{0%{transform:none}35%{transform:translateY(-7px) scale(1.03)}70%{transform:translateY(0) scale(.99)}100%{transform:none}}
@@ -221,12 +239,12 @@
   .btn{font:inherit;font-weight:700;border:none;border-radius:13px;padding:14px 24px;cursor:pointer;transition:transform .12s,box-shadow .25s,background .2s;font-size:1rem}
   .btn:active{transform:translateY(1px)}
   .btn-primary{background:var(--ink);color:var(--card);box-shadow:0 10px 22px -12px var(--shadow)}
-  .btn-primary:hover{background:#0d2024}
+  @media(hover:hover){.btn-primary:hover{background:#0d2024}}
   .btn-primary:disabled{background:var(--dim);cursor:not-allowed;box-shadow:none}
   .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-  .btn-ghost:hover{border-color:var(--ink)}
+  @media(hover:hover){.btn-ghost:hover{border-color:var(--ink)}}
   .btn-teal{background:var(--teal);color:#fff}
-  .btn-teal:hover{background:#0c5f59}
+  @media(hover:hover){.btn-teal:hover{background:#0c5f59}}
   .grow{flex:1}
   .center{display:flex;justify-content:center}
 
@@ -241,7 +259,7 @@
   .stamphead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
   .stamphead h2{margin:0;font-size:1.12rem}
   .seehist{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.04em;color:var(--teal);background:none;border:none;cursor:pointer;font-weight:700;padding:0}
-  .seehist:hover{text-decoration:underline}
+  @media(hover:hover){.seehist:hover{text-decoration:underline}}
   .stampstat{font-size:.94rem;color:var(--ink-soft)}
   .stampstat b{color:var(--teal)}
   .todaystamp{display:flex;align-items:center;gap:14px;background:var(--card);border:1px dashed var(--teal);border-radius:14px;padding:13px 15px;margin-bottom:14px}
@@ -259,7 +277,7 @@
   .viewtoggle .seg.on{background:var(--teal);color:#fff}
   .calnav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px}
   .calnav .navbtn{font:inherit;font-size:1.2rem;line-height:1;border:1px solid var(--line);background:var(--card);color:var(--ink);width:34px;height:34px;border-radius:9px;cursor:pointer;display:grid;place-items:center}
-  .calnav .navbtn:hover:not(:disabled){border-color:var(--teal);color:var(--teal)}
+  @media(hover:hover){.calnav .navbtn:hover:not(:disabled){border-color:var(--teal);color:var(--teal)}}
   .calnav .navbtn:disabled{opacity:.32;cursor:not-allowed}
   .calnav .callabel{font-family:'Gowun Batang',serif;font-weight:700;font-size:1.1rem;min-width:130px;text-align:center}
   .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
@@ -888,7 +906,7 @@ function renderSeq(){
       ${state.orderChecked?'':'<div class="handle" aria-label="드래그하여 순서 변경" title="잡고 위아래로 끌어 옮기세요">⠿</div>'}
     </div>`;
   }).join("");
-  if(!state.orderChecked) seq.querySelectorAll('.seqitem').forEach(el=>el.addEventListener('pointerdown',startDrag));
+  if(!state.orderChecked) seq.querySelectorAll('.handle').forEach(el=>el.addEventListener('pointerdown',startDrag));
 }
 let DRAG=null;
 const REDUCE=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -901,8 +919,8 @@ function startDrag(e){
   const item=e.target.closest('.seqitem');
   if(!item)return;
   if(e.button!==undefined && e.button!==0)return; // 좌클릭만
-  // 항목 전체가 드래그 시작점. touch-action:none 으로 항목 위 스크롤은 막고
-  // 헤더·여백·버튼 영역에서만 페이지 스크롤이 되도록 CSS에서 분리했다.
+  // 손잡이(.handle)만 드래그 시작점이다. 항목 본문은 touch-action:pan-y 라
+  // 리스트 위에서도 페이지가 세로 스크롤된다(손잡이에만 touch-action:none 유지).
   e.preventDefault();
   const seq=document.getElementById('seq');
   const items=[...seq.children];
@@ -1152,6 +1170,6 @@ render();
 </script>
 <!-- 방문자 분석 (비공개 대시보드: https://brain-game.goatcounter.com) · 쿠키 없음 -->
 <script data-goatcounter="https://brain-game.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+        async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
