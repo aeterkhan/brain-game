@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>백지의 방 — 부모 리포트</title>
+<style>
+:root{
+  --paper:#FAF6EE; --card:#FFFFFF; --card2:#FFFDF7;
+  --ink:#33302B; --soft:#8A857C; --faint:#B7B1A5;
+  --mint:#2FB98E; --mint-d:#1E9974; --mint-bg:#E9F8F2;
+  --coral:#FF7A6E; --coral-bg:#FFEFED;
+  --blue:#4A90D9; --blue-bg:#EDF4FC;
+  --yellow:#FFC83D; --yellow-bg:#FFF6DE;
+  --line:#EBE4D6; --shadow:0 2px 10px rgba(80,70,50,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Pretendard,'Noto Sans KR',sans-serif;
+  background:var(--paper); color:var(--ink); line-height:1.55;
+  word-break:keep-all; padding-bottom:calc(40px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:30;background:rgba(250,246,238,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hbar{max-width:560px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.brand{font-weight:800;font-size:1.02rem;letter-spacing:-.2px}
+.brand small{display:block;font-size:.72rem;font-weight:600;color:var(--soft);letter-spacing:0}
+.hspace{flex:1}
+.pill{font-size:.74rem;font-weight:700;padding:5px 11px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--soft)}
+.pill.trial{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.pill.active{border-color:var(--mint-d);color:var(--mint-d);background:var(--mint-bg)}
+.gearbtn{font-size:.78rem;font-weight:700;color:var(--soft);padding:6px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--card)}
+
+/* ---------- banners ---------- */
+.protobar{background:#3A3630;color:#F5EFE3;text-align:center;font-size:.74rem;padding:7px 12px;letter-spacing:.2px}
+.protobar b{color:var(--yellow)}
+.demobar{background:var(--yellow-bg);border-bottom:1px solid #F0DFAE;text-align:center;font-size:.78rem;padding:8px 12px;color:#8A6D1F}
+.demobar button{font-weight:700;text-decoration:underline;color:#8A6D1F;font-size:.78rem}
+
+/* ---------- sections ---------- */
+main{padding-top:18px}
+section{margin-bottom:22px}
+.sechead{display:flex;align-items:baseline;gap:8px;margin:0 2px 10px}
+.sechead h2{font-size:.95rem;font-weight:800}
+.sechead .sub{font-size:.74rem;color:var(--soft)}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+
+/* snapshot */
+.snaprow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.snap{background:var(--card2);border:1.5px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+.snap .n{font-size:1.45rem;font-weight:800;letter-spacing:-.5px}
+.snap .n small{font-size:.8rem;font-weight:700;color:var(--soft)}
+.snap .l{font-size:.72rem;color:var(--soft);font-weight:600;margin-top:2px}
+.snap.ok .n{color:var(--mint-d)}
+.kidline{display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--soft);font-weight:600;flex-wrap:wrap}
+.kidline .tag{background:var(--mint-bg);color:var(--mint-d);border-radius:8px;padding:2px 8px;font-size:.76rem;font-weight:800}
+.cheer{margin-top:12px;background:var(--mint-bg);border:1.5px dashed var(--mint);border-radius:14px;padding:12px 14px;font-size:.9rem}
+.cheer b{color:var(--mint-d)}
+.cheer .from{display:block;font-size:.72rem;color:var(--soft);margin-top:4px}
+
+/* metric grid */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px;position:relative}
+.metric.hero{border-color:var(--mint);background:var(--mint-bg)}
+.metric .mt{font-size:.76rem;font-weight:800;color:var(--soft);display:flex;gap:6px;align-items:center}
+.metric.hero .mt{color:var(--mint-d)}
+.metric .keytag{font-size:.62rem;background:var(--mint);color:#fff;border-radius:6px;padding:1px 6px;font-weight:800}
+.metric .mv{font-size:1.5rem;font-weight:800;letter-spacing:-.5px;margin-top:4px}
+.metric .mv small{font-size:.82rem;color:var(--soft);font-weight:700}
+.metric .md{font-size:.74rem;color:var(--soft);margin-top:3px}
+.metric .soon{font-size:.72rem;color:var(--faint);font-weight:700;margin-top:6px}
+.samp{font-size:.6rem;background:var(--yellow);color:#6b5410;border-radius:6px;padding:1px 6px;font-weight:800;vertical-align:2px}
+
+/* mastery bars */
+.mst{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:7px 0}
+.mst+.mst{border-top:1px dashed var(--line)}
+.mst .ml{font-size:.84rem;font-weight:700}
+.mtrack{height:10px;border-radius:99px;background:#F0EADC;overflow:hidden}
+.mfill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),#6ED9B5)}
+.mst .mp{font-size:.76rem;font-weight:800;color:var(--soft);min-width:34px;text-align:right}
+
+/* chart */
+.chartbox{padding:6px 2px 0}
+.chartbox svg{width:100%;height:auto;display:block}
+
+/* coach cards */
+.coach{border-radius:16px;border:1.5px solid var(--line);background:var(--card);padding:14px;margin-bottom:10px}
+.coach .ct{font-size:.74rem;font-weight:800;margin-bottom:5px}
+.coach.do .ct{color:var(--mint-d)} .coach.dont .ct{color:var(--coral)}
+.coach .cb{font-size:.9rem}
+.coach .why{font-size:.74rem;color:var(--soft);margin-top:6px}
+
+/* gate (locked) */
+.gate{position:relative;border-radius:18px;overflow:hidden}
+.gate .ginner{filter:blur(7px) saturate(.75);pointer-events:none;user-select:none}
+.gveil{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+  background:linear-gradient(180deg,rgba(250,246,238,.25),rgba(250,246,238,.86));cursor:pointer;border-radius:18px;text-align:center;padding:16px}
+.gveil .lk{font-size:1.7rem}
+.gveil .gt{font-weight:800;font-size:.95rem}
+.gveil .gs{font-size:.76rem;color:var(--soft)}
+.gveil .gcta{margin-top:2px;background:var(--mint);color:#fff;font-weight:800;font-size:.82rem;border-radius:99px;padding:8px 18px;box-shadow:0 3px 10px rgba(47,185,142,.35)}
+
+/* plus banner */
+.plusbox{background:linear-gradient(135deg,#2FB98E,#1E9974);border-radius:20px;padding:20px;color:#fff;box-shadow:0 6px 18px rgba(30,153,116,.28)}
+.plusbox h3{font-size:1.12rem;font-weight:800;letter-spacing:-.3px}
+.plusbox p{font-size:.84rem;opacity:.94;margin-top:5px}
+.plusbox .row{display:flex;gap:9px;margin-top:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:14px;font-weight:800;font-size:.9rem;padding:13px 16px;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:#fff;color:var(--mint-d);flex:1}
+.btn.ghost{background:rgba(255,255,255,.16);color:#fff;border:1.5px solid rgba(255,255,255,.55);flex:1}
+.btn.mint{background:var(--mint);color:#fff;width:100%}
+.btn.line{border:1.5px solid var(--line);background:var(--card);color:var(--ink);width:100%}
+.btn.danger{color:var(--coral);font-size:.8rem;font-weight:700}
+.btn[disabled]{opacity:.5;pointer-events:none}
+
+/* tools (pro) */
+.toolrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tool{border:1.5px solid var(--line);background:var(--card);border-radius:16px;padding:14px;text-align:left}
+.tool .ti{font-size:1.3rem}
+.tool .tt{font-weight:800;font-size:.86rem;margin-top:4px}
+.tool .td{font-size:.72rem;color:var(--soft);margin-top:2px}
+
+/* footer honesty */
+.honest{border:1.5px solid var(--line);background:var(--card2);border-radius:16px;padding:14px;margin-bottom:10px}
+.honest .ht{font-size:.76rem;font-weight:800;color:var(--soft);margin-bottom:4px}
+.honest .hb{font-size:.8rem;color:var(--soft)}
+.ver{font-size:.7rem;color:var(--faint);text-align:center;margin-top:16px}
+
+/* empty state */
+.empty{text-align:center;padding:34px 18px}
+.empty .em{font-size:2.6rem}
+.empty h2{font-size:1.15rem;font-weight:800;margin:10px 0 6px}
+.empty p{font-size:.86rem;color:var(--soft);margin-bottom:18px}
+.empty .btn{width:100%;margin-bottom:9px}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(40,35,28,.45)}
+.modal.on{display:flex}
+.sheet{background:var(--paper);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom));animation:up .22s cubic-bezier(.2,.9,.3,1)}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:translateY(0);opacity:1}}
+.sheet .shead{display:flex;align-items:center;margin-bottom:12px}
+.sheet .shead h3{font-size:1.05rem;font-weight:800;flex:1}
+.xbtn{font-size:.8rem;font-weight:700;color:var(--soft);padding:6px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--card)}
+.bene{display:grid;gap:7px;margin:12px 0}
+.bene .bi{display:flex;gap:9px;font-size:.86rem;align-items:flex-start}
+.bene .bi .ic{color:var(--mint-d);font-weight:800}
+.nosell{background:var(--coral-bg);border:1.5px dashed var(--coral);border-radius:14px;padding:11px 13px;font-size:.78rem;margin:12px 0}
+.nosell b{color:var(--coral)}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 6px}
+.plan{border:2px solid var(--line);border-radius:16px;padding:14px;background:var(--card);text-align:left;position:relative}
+.plan.sel{border-color:var(--mint);background:var(--mint-bg)}
+.plan .pn{font-size:.78rem;font-weight:800;color:var(--soft)}
+.plan .pp{font-size:1.25rem;font-weight:800;letter-spacing:-.5px;margin-top:2px}
+.plan .pd{font-size:.7rem;color:var(--soft);margin-top:2px}
+.plan .off{position:absolute;top:-9px;right:10px;background:var(--coral);color:#fff;font-size:.64rem;font-weight:800;border-radius:8px;padding:2px 7px}
+.smallprint{font-size:.72rem;color:var(--soft);margin-top:10px;text-align:center}
+.paysel{display:grid;gap:9px;margin:14px 0}
+.pm{display:flex;align-items:center;gap:11px;border:2px solid var(--line);border-radius:14px;padding:13px;background:var(--card);font-weight:700;font-size:.9rem}
+.pm.sel{border-color:var(--mint);background:var(--mint-bg)}
+.pm .pico{width:34px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#3A2929}
+.paying{text-align:center;padding:30px 0}
+.spin{width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--mint);margin:0 auto 14px;animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.paydone{text-align:center;padding:16px 0}
+.paydone .big{width:64px;height:64px;border-radius:50%;background:var(--mint);color:#fff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-bottom:1px dashed var(--line);font-size:.86rem}
+.mrow .k{color:var(--soft);font-weight:600}
+.mrow .v{font-weight:800}
+.sharewrap{text-align:center}
+.sharewrap img{width:78%;max-width:320px;border-radius:14px;border:1.5px solid var(--line);box-shadow:var(--shadow);margin:8px 0}
+.sharewrap .hint{font-size:.76rem;color:var(--soft);margin-bottom:12px}
+@media (min-width:561px){.modal{align-items:center}.sheet{border-radius:22px}}
+</style>
+</head>
+<body>
+
+<div class="protobar">⚗️ <b>프로토타입</b> — 실제 결제가 일어나지 않는 검증용 화면입니다</div>
+<header>
+  <div class="hbar">
+    <div class="brand">백지의 방<small>부모 리포트</small></div>
+    <div class="hspace"></div>
+    <span class="pill" id="pill-status">무료</span>
+    <button class="gearbtn" id="btn-manage" onclick="openManage()">구독 관리</button>
+  </div>
+</header>
+<div class="demobar" id="demobar" style="display:none">
+  📋 지금 보시는 것은 <b>샘플 데이터</b>입니다 · <button onclick="exitDemo()">샘플 끄기</button>
+</div>
+
+<main class="wrap" id="app"></main>
+
+<!-- ================= paywall ================= -->
+<div class="modal" id="paywall" onclick="if(event.target===this)closeModal('paywall')">
+  <div class="sheet">
+    <div class="shead"><h3>부모 리포트 플러스</h3><button class="xbtn" onclick="closeModal('paywall')">닫기</button></div>
+    <p style="font-size:.9rem"><b>아이는 게임을, 부모님은 안심을.</b><br>아이 화면에는 결제·광고가 절대 나오지 않습니다.</p>
+    <div class="bene">
+      <div class="bi"><span class="ic">✓</span><span>성장 리포트 3지표 — 꾸준함 · 숙련 · <b>유지(며칠 뒤 복습에서도 기억했나)</b></span></div>
+      <div class="bi"><span class="ic">✓</span><span>주간 추이 차트 + 학습 전략별 상세</span></div>
+      <div class="bi"><span class="ic">✓</span><span>부모 코칭 카드 — 아이의 이번 주 데이터에 맞춘 "이렇게 말해주세요"</span></div>
+      <div class="bi"><span class="ic">✓</span><span>주간 리포트 카드 이미지 저장 (가족 단톡 공유)</span></div>
+      <div class="bi"><span class="ic">✓</span><span>복습일 캘린더(.ics) + 기록 백업</span></div>
+      <div class="bi"><span class="ic" style="color:var(--faint)">…</span><span style="color:var(--soft)">곧: 자기주도 측정 · 주간 이메일 요약 · 다자녀 프로필</span></div>
+    </div>
+    <div class="nosell"><b>팔지 않는 것</b> — 원점수·오답 로그·실시간 감시·랭킹은 유료여도 제공하지 않습니다. 아이의 성장을 축하하는 도구이지, 감시하는 도구가 아닙니다.</div>
+    <div class="plans">
+      <button class="plan sel" id="plan-monthly" onclick="selectPlan('monthly')">
+        <div class="pn">월간</div><div class="pp">4,900원</div><div class="pd">무약정 · 언제든 해지</div>
+      </button>
+      <button class="plan" id="plan-yearly" onclick="selectPlan('yearly')">
+        <span class="off">33% 할인</span>
+        <div class="pn">연간</div><div class="pp">39,000원</div><div class="pd">월 3,250원 꼴</div>
+      </button>
+    </div>
+    <button class="btn mint" id="cta-trial" onclick="startTrial()" style="margin-top:8px">7일 무료 체험 시작 — 결제 정보 없이</button>
+    <button class="btn line" id="cta-buy" onclick="openCheckout()" style="margin-top:9px">바로 구독하기</button>
+    <div class="smallprint">무약정 · 언제든 해지 · 체험 종료 후 자동 결제 없음<br>⚗️ 프로토타입: 실제 결제가 일어나지 않습니다</div>
+  </div>
+</div>
+
+<!-- ================= checkout ================= -->
+<div class="modal" id="checkout" onclick="if(event.target===this)closeModal('checkout')">
+  <div class="sheet" id="checkout-body"></div>
+</div>
+
+<!-- ================= manage ================= -->
+<div class="modal" id="manage" onclick="if(event.target===this)closeModal('manage')">
+  <div class="sheet" id="manage-body"></div>
+</div>
+
+<!-- ================= share card ================= -->
+<div class="modal" id="share" onclick="if(event.target===this)closeModal('share')">
+  <div class="sheet sharewrap" id="share-body"></div>
+</div>
+
+<script>
+/* ============ consts & utils ============ */
+var KID_PROFILE_KEY = "baekji.kids.v1.profile";  // 읽기 전용 — 아이 앱 데이터
+var KID_STAMP_KEY   = "baekji.kids.stamps";      // 읽기 전용
+var PRO_KEY = "baekji.pro.v1";
+var EVT_KEY = "baekji.pro.events";
+var TRIAL_DAYS = 7;
+
+var CONCEPTS = [
+  {id:"shelf",    emoji:"🗺️", label:"큰 그림 먼저 보기"},
+  {id:"question", emoji:"❓", label:"왜? 라고 묻기"},
+  {id:"blank",    emoji:"✏️", label:"안 보고 써보기"},
+  {id:"detail",   emoji:"🔍", label:"빠진 곳 채우기"},
+  {id:"rebuild",  emoji:"🦸", label:"친구에게 설명하기"}
+];
+
+function $(s){ return document.querySelector(s); }
+function dk(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function addDays(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function fmtMD(d){ return (d.getMonth()+1)+"월 "+d.getDate()+"일"; }
+function won(n){ return n.toLocaleString("ko-KR")+"원"; }
+
+function track(name, meta){
+  try{
+    var log = JSON.parse(localStorage.getItem(EVT_KEY)) || [];
+    log.push({t:new Date().toISOString(), name:name, meta:meta||null});
+    if(log.length>200) log = log.slice(-200);
+    localStorage.setItem(EVT_KEY, JSON.stringify(log));
+  }catch(_){}
+  console.log("[track]", name, meta||"");
+}
+
+/* ============ data source (real | demo) ============ */
+var MODE = "real"; // real | demo
+
+function loadReal(){
+  var stamps={}, profile=null;
+  try{ stamps = JSON.parse(localStorage.getItem(KID_STAMP_KEY)) || {}; }catch(_){ stamps={}; }
+  try{ profile = JSON.parse(localStorage.getItem(KID_PROFILE_KEY)); }catch(_){ profile=null; }
+  return {stamps:stamps, profile:profile, demo:false, selfStart:null};
+}
+function hasRealData(d){
+  if(Object.keys(d.stamps).length>0) return true;
+  if(d.profile && (d.profile.xp>0)) return true;
+  return false;
+}
+function demoData(){
+  var today = new Date();
+  // 4주 패턴(주당 3~5회), 마지막 3일 연속 = 오늘 포함
+  var pattern = [1,0,1,1,0,1,0, 1,1,0,1,0,1,0, 0,1,1,0,1,1,0, 1,0,1,0,1,1,1];
+  var stamps = {};
+  for(var i=0;i<28;i++){
+    if(pattern[i]) stamps[dk(addDays(today,-(27-i)))] = 1;
+  }
+  function mk(m,reps,lapses,iv,dueOff){
+    return {mastery:m,reps:reps,lapses:lapses,intervalDays:iv,ease:2.5,due:addDays(today,dueOff).toISOString()};
+  }
+  var profile = {v:1, xp:340, level:4, badges:{first:1,streak3:1,combo5:1},
+    concepts:{
+      shelf:    mk(85,4,0,7,3),
+      question: mk(62,3,1,3,1),
+      blank:    mk(38,2,1,1,0),
+      detail:   mk(15,1,0,0,0),
+      rebuild:  mk(74,3,0,5,4)
+    }};
+  return {stamps:stamps, profile:profile, demo:true, selfStart:{done:7,total:10}};
+}
+function currentData(){ return MODE==="demo" ? demoData() : loadReal(); }
+
+/* ============ metrics ============ */
+function calcMetrics(d){
+  var s=d.stamps, today=new Date();
+  function bucket(fromAgo,toAgo){ // fromAgo >= toAgo (일 전)
+    var c=0;
+    for(var i=toAgo;i<=fromAgo;i++){ if(s[dk(addDays(today,-i))]) c++; }
+    return c;
+  }
+  var todayDone = !!s[dk(today)];
+  var weekly=[bucket(27,21),bucket(20,14),bucket(13,7),bucket(6,0)];
+  // 스트릭은 '오늘 미완료'라도 어제까지의 연속을 유지(아침에 0으로 보이는 버그 방지)
+  var streak=0, cur=todayDone?new Date():addDays(today,-1);
+  while(s[dk(cur)]){ streak++; cur=addDays(cur,-1); }
+  var totalDays = Object.keys(s).length;
+
+  var cs=[], reviewed=0, retained=0, mastered=0, learning=0, dues=[];
+  CONCEPTS.forEach(function(cm){
+    var c = d.profile && d.profile.concepts ? d.profile.concepts[cm.id] : null;
+    var m = c ? (c.mastery||0) : 0;
+    var reps = c ? (c.reps||0) : 0, lapses = c ? (c.lapses||0) : 0, iv = c ? (c.intervalDays||0) : 0;
+    if(reps>0 || lapses>0) reviewed++;           // 한 번이라도 복습된 전략
+    if(reps>=2 && iv>=3) retained++;             // 간격을 두고 2회+ 다시 꺼낸 전략
+    if(m>=80) mastered++; else if(m>0) learning++;
+    if(c && c.due){ var dd=new Date(c.due); if(!isNaN(dd)) dues.push({label:cm.label, emoji:cm.emoji, date:dd}); }
+    cs.push({id:cm.id, emoji:cm.emoji, label:cm.label, mastery:m, reps:reps, lapses:lapses, iv:iv});
+  });
+  dues.sort(function(a,b){ return a.date-b.date; });
+
+  return {
+    weekly:weekly, daysThisWeek:weekly[3], daysLastWeek:weekly[2],
+    streak:streak, todayDone:todayDone, totalDays:totalDays,
+    concepts:cs, mastered:mastered, learning:learning,
+    retained:retained, reviewed:reviewed,
+    dues:dues,
+    level: d.profile ? (d.profile.level||1) : 1,
+    xp: d.profile ? (d.profile.xp||0) : 0,
+    badges: d.profile && d.profile.badges ? Object.keys(d.profile.badges).length : 0,
+    selfStart: d.selfStart
+  };
+}
+
+/* ============ entitlement ============ */
+function getPro(){
+  var p=null;
+  try{ p = JSON.parse(localStorage.getItem(PRO_KEY)); }catch(_){ p=null; }
+  if(!p) return {status:"none"};
+  if(p.status==="trial" && Date.now()>p.trialEnds){ p={status:"expired", was:"trial"}; savePro(p); }
+  return p;
+}
+function savePro(p){ try{ localStorage.setItem(PRO_KEY, JSON.stringify(p)); }catch(_){} }
+function isPro(p){ return p.status==="active" || (p.status==="trial" && Date.now()<p.trialEnds); }
+function trialDaysLeft(p){ return Math.max(0, Math.ceil((p.trialEnds-Date.now())/86400000)); }
+
+function startTrial(){
+  var now=Date.now();
+  savePro({status:"trial", startedAt:now, trialEnds:now+TRIAL_DAYS*86400000});
+  track("trial_start");
+  closeModal("paywall");
+  renderAll();
+  window.scrollTo({top:0});
+}
+function cancelSub(){
+  savePro({status:"none", canceledAt:Date.now()});
+  track("cancel");
+  closeModal("manage");
+  renderAll();
+}
+function resetProto(){
+  try{ localStorage.removeItem(PRO_KEY); localStorage.removeItem(EVT_KEY); }catch(_){}
+  location.reload();
+}
+
+/* ============ paywall / checkout ============ */
+var selectedPlan="monthly";
+function openPaywall(src){
+  track("paywall_view",{src:src||"direct"});
+  $("#paywall").classList.add("on");
+}
+function closeModal(id){ $("#"+id).classList.remove("on"); }
+function selectPlan(p){
+  selectedPlan=p;
+  $("#plan-monthly").classList.toggle("sel", p==="monthly");
+  $("#plan-yearly").classList.toggle("sel", p==="yearly");
+}
+var payMethod="kakao";
+function openCheckout(){
+  closeModal("paywall");
+  track("checkout_open",{plan:selectedPlan});
+  payMethod="kakao";
+  renderCheckout();
+  $("#checkout").classList.add("on");
+}
+function renderCheckout(){
+  var price = selectedPlan==="monthly" ? 4900 : 39000;
+  var label = selectedPlan==="monthly" ? "월간 (무약정)" : "연간 (33% 할인)";
+  $("#checkout-body").innerHTML =
+    '<div class="shead"><h3>결제하기</h3><button class="xbtn" onclick="closeModal(\'checkout\')">닫기</button></div>'
+    +'<div class="mrow"><span class="k">플랜</span><span class="v">부모 리포트 플러스 · '+label+'</span></div>'
+    +'<div class="mrow"><span class="k">금액</span><span class="v">'+won(price)+(selectedPlan==="monthly"?" / 월":" / 년")+'</span></div>'
+    +'<div class="paysel">'
+    +  pmBtn("kakao","카카오페이","#FFE812","Pay")
+    +  pmBtn("toss","토스페이","#E8F0FE","toss")
+    +  pmBtn("card","신용·체크카드","#EFEFEF","💳")
+    +'</div>'
+    +'<button class="btn mint" id="btn-pay" onclick="doPay()">테스트 결제하기 — 실제 결제 없음</button>'
+    +'<div class="smallprint">⚗️ 프로토타입 결제 시뮬레이션입니다. 카드번호 입력도, 과금도 없습니다.<br>실서비스: 토스페이먼츠 결제위젯 + 카카오페이 (웹 결제)</div>';
+}
+function pmBtn(id,label,bg,badge){
+  var sel = payMethod===id ? " sel":"";
+  return '<button class="pm'+sel+'" id="pm-'+id+'" onclick="pickPm(\''+id+'\')">'
+    +'<span class="pico" style="background:'+bg+'">'+badge+'</span>'+label
+    +'</button>';
+}
+function pickPm(id){ payMethod=id; renderCheckout(); }
+function doPay(){
+  track("purchase_attempt",{plan:selectedPlan, method:payMethod});
+  $("#checkout-body").innerHTML =
+    '<div class="paying"><div class="spin"></div><div style="font-weight:800">결제 승인 중…</div>'
+    +'<div style="font-size:.78rem;color:var(--soft);margin-top:4px">프로토타입 시뮬레이션</div></div>';
+  setTimeout(finishPay, 1100);
+}
+function finishPay(){
+  var now=Date.now();
+  var renews = selectedPlan==="monthly" ? now+30*86400000 : now+365*86400000;
+  savePro({status:"active", plan:selectedPlan, startedAt:now, renewsAt:renews, method:payMethod});
+  track("purchase_mock",{plan:selectedPlan, method:payMethod});
+  $("#checkout-body").innerHTML =
+    '<div class="paydone"><div class="big">✓</div>'
+    +'<h3 style="font-weight:800;font-size:1.1rem">부모 리포트 플러스가 열렸어요</h3>'
+    +'<p style="font-size:.84rem;color:var(--soft);margin:6px 0 16px">아이의 성장을 축하할 준비가 됐습니다.<br>(테스트 결제 — 실제 과금 없음)</p>'
+    +'<button class="btn mint" id="btn-paydone" onclick="closeModal(\'checkout\');renderAll();window.scrollTo({top:0})">리포트 보러 가기</button></div>';
+}
+
+/* ============ manage ============ */
+function openManage(){
+  var p=getPro();
+  var statusTxt = p.status==="active" ? "플러스 구독 중"
+    : (p.status==="trial" && isPro(p)) ? "무료 체험 중 (D-"+trialDaysLeft(p)+")"
+    : p.status==="expired" ? "체험 종료 (미결제)"
+    : "무료";
+  var planTxt = p.plan==="yearly" ? "연간 39,000원" : p.plan==="monthly" ? "월간 4,900원" : "-";
+  var evts=[]; try{ evts=JSON.parse(localStorage.getItem(EVT_KEY))||[]; }catch(_){}
+  var last3 = evts.slice(-3).map(function(e){ return e.name; }).join(" · ") || "-";
+  $("#manage-body").innerHTML =
+    '<div class="shead"><h3>구독 관리</h3><button class="xbtn" onclick="closeModal(\'manage\')">닫기</button></div>'
+    +'<div class="mrow"><span class="k">상태</span><span class="v">'+statusTxt+'</span></div>'
+    +'<div class="mrow"><span class="k">플랜</span><span class="v">'+planTxt+'</span></div>'
+    +'<div class="mrow"><span class="k">보고 있는 데이터</span><span class="v">'+(MODE==="demo"?"샘플":"이 기기의 실제 기록")+'</span></div>'
+    +'<div class="mrow"><span class="k">계측 이벤트</span><span class="v" style="font-size:.74rem">'+evts.length+'건 · 최근: '+last3+'</span></div>'
+    +(isPro(p) ? '<button class="btn danger" id="btn-cancel" onclick="cancelSub()" style="margin-top:14px">구독 해지 (즉시, 무약정)</button>' : '')
+    +'<button class="btn line" onclick="closeModal(\'manage\');openPaywall(\'manage\')" style="margin-top:12px">플랜 보기</button>'
+    +'<button class="btn danger" onclick="resetProto()" style="margin-top:6px">프로토타입 초기화 (구독·이벤트 기록 삭제)</button>'
+    +'<div class="smallprint">아이의 학습 기록(baekji.kids.*)은 이 페이지가 절대 수정하지 않습니다.</div>';
+  $("#manage").classList.add("on");
+}
+
+/* ============ render ============ */
+// 잠금 화면은 실제 수치·코칭 스크립트(유료 IP)를 DOM에 넣지 않고 '스켈레톤'만 흐리게 보여준다.
+function skBar(w){ return '<div style="height:12px;border-radius:8px;background:#E7E1D4;width:'+w+'"></div>'; }
+function skeletonFor(id){
+  if(id==="gate-coach"){
+    var one='<div class="coach"><div style="display:grid;gap:7px">'+skBar('40%')+skBar('92%')+skBar('68%')+'</div></div>';
+    return one+one+one;
+  }
+  var tile='<div class="metric"><div style="display:grid;gap:8px">'+skBar('55%')+skBar('35%')+skBar('80%')+'</div></div>';
+  var grid='<div class="mgrid">'+tile+tile+tile+tile+'</div>';
+  var chart='<div class="card" style="margin-top:10px;display:flex;gap:14px;align-items:flex-end;height:120px;padding:18px">'
+    +'<div style="flex:1;background:#E7E1D4;border-radius:8px;height:40%"></div>'
+    +'<div style="flex:1;background:#E7E1D4;border-radius:8px;height:65%"></div>'
+    +'<div style="flex:1;background:#E7E1D4;border-radius:8px;height:80%"></div>'
+    +'<div style="flex:1;background:#CFE8DD;border-radius:8px;height:100%"></div></div>';
+  var bars='<div class="card" style="margin-top:10px;display:grid;gap:12px">'+skBar('90%')+skBar('90%')+skBar('90%')+skBar('90%')+skBar('90%')+'</div>';
+  return grid+chart+bars;
+}
+function gateWrap(id, title, sub){
+  return '<div class="gate" id="'+id+'">'
+    +'<div class="ginner" aria-hidden="true">'+skeletonFor(id)+'</div>'
+    +'<div class="gveil" onclick="openPaywall(\''+id+'\')">'
+    +'<div class="lk">🔒</div><div class="gt">'+title+'</div><div class="gs">'+sub+'</div>'
+    +'<div class="gcta">7일 무료로 열어보기</div></div></div>';
+}
+
+function svgTrend(weekly){
+  var labels=["4주 전","3주 전","2주 전","최근 7일"];
+  var max=7, W=480, H=150, bw=64, gap=(W-bw*4)/5;
+  var bars="";
+  for(var i=0;i<4;i++){
+    var v=weekly[i], h=Math.round((v/max)*96);
+    var x=gap+(bw+gap)*i, y=118-h;
+    var col = i===3 ? "#2FB98E" : "#CFE8DD";
+    bars += '<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+h+'" rx="8" fill="'+col+'"/>'
+      +'<text x="'+(x+bw/2)+'" y="'+(y-7)+'" text-anchor="middle" font-size="15" font-weight="800" fill="#33302B">'+v+'</text>'
+      +'<text x="'+(x+bw/2)+'" y="140" text-anchor="middle" font-size="12" fill="#8A857C">'+labels[i]+'</text>';
+  }
+  return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'
+    +'<line x1="'+gap+'" y1="118" x2="'+(W-gap)+'" y2="118" stroke="#EBE4D6" stroke-width="2"/>'+bars+'</svg>';
+}
+
+function htmlSnapshot(m){
+  var cheer = m.todayDone
+    ? "\"오늘도 스스로 방에 들어갔네. 꾸준한 게 진짜 실력이야.\""
+    : "\"어제까지 해온 것만으로도 대단해. 오늘도 5분, 같이 볼까?\"";
+  return '<section>'
+    +'<div class="sechead"><h2>이번 주 스냅샷</h2><span class="sub">무료로 계속 보실 수 있어요</span></div>'
+    +'<div class="card">'
+    +'<div class="snaprow">'
+    +'<div class="snap'+(m.daysThisWeek>0?" ok":"")+'"><div class="n">'+m.daysThisWeek+'<small>일</small></div><div class="l">최근 7일 참여</div></div>'
+    +'<div class="snap'+(m.streak>0?" ok":"")+'"><div class="n">'+m.streak+'<small>일</small></div><div class="l">연속 참여</div></div>'
+    +'<div class="snap'+(m.todayDone?" ok":"")+'"><div class="n">'+(m.todayDone?"✓":"—")+'</div><div class="l">'+(m.todayDone?"오늘 완료":"오늘 전")+'</div></div>'
+    +'</div>'
+    +'<div class="kidline"><span class="tag">레벨 '+m.level+'</span><span>'+m.xp+' XP</span><span>·</span><span>스티커 '+m.badges+'장</span><span>·</span><span>총 '+m.totalDays+'일 참여</span></div>'
+    +'<div class="cheer"><b>오늘의 응원 한마디</b><br>'+cheer+'<span class="from">결과가 아니라 과정을 짚어주세요 — 자기주도의 시작입니다</span></div>'
+    +'</div></section>';
+}
+
+function daysUntil(date){ var t=new Date(); t.setHours(0,0,0,0); var d=new Date(date); d.setHours(0,0,0,0); return Math.round((d-t)/86400000); }
+function nextDueLabel(m){
+  for(var i=0;i<m.dues.length;i++){ var n=daysUntil(m.dues[i].date); if(n>=0) return n===0?"오늘":("D-"+n); }
+  return null;
+}
+function htmlMetrics(m){
+  // 유지: 실제 상태에 맞춰 정직하게 — 복습 전 / 쌓이는 중 / 자리잡음
+  var heroVal, heroSub;
+  if(m.reviewed===0){
+    heroVal='<div class="mv" style="color:var(--faint)">아직 복습 전</div>';
+    heroSub='복습을 한 번 마치면 여기서 유지가 측정돼요';
+  } else if(m.retained===0){
+    var nd=nextDueLabel(m);
+    heroVal='<div class="mv" style="color:var(--mint-d)">쌓이는 중</div>';
+    heroSub='며칠 뒤 복습에서 다시 기억하면 채워져요'+(nd?' · 다음 복습 '+nd:'');
+  } else {
+    heroVal='<div class="mv">'+m.retained+'<small> / 5개</small></div>';
+    heroSub='간격을 두고 다시 꺼내도 기억한 학습 전략';
+  }
+  // 자기주도: 아직 미측정(demo에서만 샘플). 판매 4지표에 포함하지 않고 '준비 중'으로 정직 표기.
+  var selfHtml = m.selfStart
+    ? '<div class="mv">'+Math.round(m.selfStart.done/m.selfStart.total*100)+'<small>%</small> <span class="samp">샘플</span></div><div class="md">스스로 시작 '+m.selfStart.done+'회 / '+m.selfStart.total+'회</div>'
+    : '<div class="mv" style="color:var(--faint);font-size:1rem">준비 중</div><div class="md">잔소리 없이 스스로 시작한 비율</div><div class="soon">다음 버전에서 측정 시작 · 지금은 청구되지 않아요</div>';
+  return '<div class="mgrid">'
+    +'<div class="metric"><div class="mt">🗓️ 꾸준함</div><div class="mv">'+m.daysThisWeek+'<small> / 7일</small></div><div class="md">지난주 '+m.daysLastWeek+'일 → 이번 주 '+m.daysThisWeek+'일</div></div>'
+    +'<div class="metric"><div class="mt">📚 숙련</div><div class="mv">'+m.mastered+'<small> / 5 익힘</small></div><div class="md">익히는 중 '+m.learning+'개</div></div>'
+    +'<div class="metric hero"><div class="mt">🌱 유지 <span class="keytag">핵심</span></div>'+heroVal+'<div class="md">'+heroSub+'</div></div>'
+    +'<div class="metric"><div class="mt">🙋 자기주도 <span style="font-size:.6rem;background:var(--line);color:var(--soft);border-radius:6px;padding:1px 5px;font-weight:800">준비 중</span></div>'+selfHtml+'</div>'
+    +'</div>';
+}
+
+function htmlMastery(m){
+  var rows = m.concepts.map(function(c){
+    return '<div class="mst"><span class="ml">'+c.emoji+' '+c.label+'</span>'
+      +'<div class="mtrack"><div class="mfill" style="width:'+c.mastery+'%"></div></div>'
+      +'<span class="mp">'+c.mastery+'</span></div>';
+  }).join("");
+  return '<div class="card" style="margin-top:10px"><div class="sechead" style="margin:0 0 6px"><h2 style="font-size:.84rem">학습 전략별 익힘 정도</h2></div>'+rows+'</div>';
+}
+
+function htmlReportSection(m, pro){
+  var body = pro
+    ? ( htmlMetrics(m)
+        +'<div class="card chartbox" style="margin-top:10px"><div class="sechead" style="margin:0 0 2px"><h2 style="font-size:.84rem">주간 참여 추이</h2></div>'+svgTrend(m.weekly)+'</div>'
+        +htmlMastery(m) )
+    : gateWrap("gate-report", "성장 리포트 3지표", "\"제대로 익히고 있나\"에 직접 답하는 지표들이에요");
+  return '<section><div class="sechead"><h2>성장 리포트</h2><span class="sub">원점수 대신 성장을 보여드려요</span></div>'+body+'</section>';
+}
+
+var COACH_FREE = {t:"오늘 한마디", cls:"do", body:"\"오늘 몇 점이야?\" 대신 — <b>\"오늘은 어떤 방법으로 꺼내봤어?\"</b>", why:"점수 질문은 회피동기를 만들고, 과정 질문은 접근동기를 만듭니다."};
+function coachCard(c){
+  return '<div class="coach '+c.cls+'"><div class="ct">'+(c.cls==="do"?"💬 ":"🚫 ")+c.t+'</div><div class="cb">'+c.body+'</div><div class="why">'+c.why+'</div></div>';
+}
+function weekIndex(){ var d=new Date(); var jan1=new Date(d.getFullYear(),0,1); return Math.floor((d-jan1)/604800000); }
+// 아이의 이번 주 실제 데이터 + 주간 회전으로 코칭을 구성 → "매주 갱신"이 사실이 되도록
+function buildCoach(m){
+  var cards=[], wk=weekIndex();
+  if(m.daysThisWeek < m.daysLastWeek){
+    cards.push({t:"이렇게 말해주세요", cls:"do", body:"\"이번 주는 좀 뜸했네. 괜찮아 — <b>오늘 딱 5분만 같이 해볼까?</b>\"", why:"참여가 지난주 "+m.daysLastWeek+"일 → 이번 주 "+m.daysThisWeek+"일로 줄었어요. 다그치기보다 문턱을 낮추면 다시 시작하기 쉬워집니다."});
+  } else if(m.daysThisWeek > m.daysLastWeek){
+    cards.push({t:"이렇게 말해주세요", cls:"do", body:"\"지난주보다 <b>하루 더 했네.</b> 그게 진짜 쌓이는 거야.\"", why:"참여가 "+m.daysLastWeek+"일 → "+m.daysThisWeek+"일로 늘었어요. 남과 비교 대신 아이 자신의 어제와 비교해 주세요."});
+  } else {
+    cards.push({t:"이렇게 말해주세요", cls:"do", body:"\"하기 싫을 수도 있어, 괜찮아. <b>지금 할래, 저녁 먹고 할래?</b>\"", why:"감정 인정 + 선택권 — 강제를 자발로 바꾸는 두 가지 지렛대입니다."});
+  }
+  if(m.retained>0){
+    cards.push({t:"오늘의 관찰", cls:"do", body:"이번 주 <b>"+m.retained+"개 전략</b>이 며칠 뒤 복습에서도 살아남았어요. \"<b>저번에 배운 거 아직 기억나?</b>\" 하고 슬쩍 물어봐 주세요.", why:"인출에 성공한 기억을 한 번 더 꺼내면 더 오래 갑니다(간격 효과)."});
+  } else if(m.mastered>0){
+    cards.push({t:"오늘의 관찰", cls:"do", body:"<b>"+m.mastered+"개 전략</b>을 익히는 중이에요. 결과보다 \"<b>오늘은 어떤 방법으로 꺼내봤어?</b>\"라고 과정을 짚어주세요.", why:"과정 질문은 접근동기를, 점수 질문은 회피동기를 만듭니다."});
+  } else {
+    cards.push({t:"오늘의 관찰", cls:"do", body:"아직 초반이에요. <b>매일 짧게</b>가 몰아서 길게보다 훨씬 강합니다. 오늘 5분이면 충분해요.", why:"분산 연습이 집중(벼락치기) 연습보다 장기 기억에 유리합니다."});
+  }
+  var donts=[
+    {t:"하지 마세요", cls:"dont", body:"점수 캐묻기 · 형제/친구와 비교 · <b>\"게임 그만하고 공부해\"</b>", why:"이 게임이 곧 공부(인출연습)입니다. 캐묻기·비교는 아이의 시작 동력을 꺼뜨립니다."},
+    {t:"하지 마세요", cls:"dont", body:"틀린 걸 그 자리에서 바로 교정하기 · <b>\"그것도 몰라?\"</b>", why:"틀림은 인출연습의 정상 과정이에요. 스스로 빈틈을 채우게 두면 더 오래 기억합니다."},
+    {t:"하지 마세요", cls:"dont", body:"보상으로 유도하기 · <b>\"다 하면 게임 시간 줄게\"</b>", why:"외적 보상은 잠깐 효과 뒤 흥미를 갉아먹어요. 성취 자체를 함께 기뻐해 주세요."}
+  ];
+  cards.push(donts[wk % donts.length]);
+  return cards;
+}
+function htmlCoachSection(m, pro){
+  var body = pro ? buildCoach(m).map(coachCard).join("")
+    : gateWrap("gate-coach", "부모 코칭 카드", "아이의 이번 주 데이터에 맞춘 한마디 · 매주 갱신");
+  return '<section><div class="sechead"><h2>부모 코칭</h2><span class="sub">부모님은 아이의 가장 큰 환경입니다</span></div>'
+    +coachCard(COACH_FREE)+body+'</section>';
+}
+
+function htmlToolsSection(m, pro){
+  if(!pro) return "";
+  return '<section><div class="sechead"><h2>플러스 도구</h2></div><div class="toolrow">'
+    +'<button class="tool" id="btn-export" onclick="exportCard()"><div class="ti">🖼️</div><div class="tt">주간 리포트 카드</div><div class="td">이미지로 저장 · 가족 단톡 공유</div></button>'
+    +'<button class="tool" id="btn-ics" onclick="downloadIcs()"><div class="ti">🗓️</div><div class="tt">복습일 캘린더</div><div class="td">.ics로 내 캘린더에 추가</div></button>'
+    +'</div></section>';
+}
+
+function htmlPlusCTA(pro){
+  if(pro) return "";
+  return '<section><div class="plusbox">'
+    +'<h3>부모 리포트 플러스</h3>'
+    +'<p>월 4,900원 · 무약정 · 언제든 해지 — 학습지 한 달의 1/10 값으로, "제대로 익히고 있나"라는 질문에 매주 답을 드려요.</p>'
+    +'<div class="row">'
+    +'<button class="btn pri" id="cta-open-paywall" onclick="openPaywall(\'bottom-cta\')">플랜 보기</button>'
+    +'<button class="btn ghost" onclick="startTrial();track(\'trial_start_bottom\')">7일 무료 체험</button>'
+    +'</div></div></section>';
+}
+
+function htmlFooter(){
+  return '<section>'
+    +'<div class="honest"><div class="ht">정직 고지</div><div class="hb">인출연습·간격반복의 <b>원리</b>는 검증된 학습과학입니다. 다만 이 게임 <b>형태</b>의 효과는 아직 검증 중입니다. 과장하지 않겠습니다.</div></div>'
+    +'<div class="honest"><div class="ht">데이터</div><div class="hb">모든 학습 기록은 <b>이 기기 안에만</b> 저장됩니다. 서버로 보내지 않으며, 이 페이지는 아이의 기록을 읽기만 합니다.</div></div>'
+    +'<div class="ver">백지의 방 · 부모 리포트 프로토타입 v0.1 — 실제 결제 없음 · <a href="../v2/kids/" style="color:var(--faint)">아이 앱 열기</a></div>'
+    +'</section>';
+}
+
+function htmlEmpty(){
+  return '<div class="empty card">'
+    +'<div class="em">🌙</div>'
+    +'<h2>아직 이 기기에 학습 기록이 없어요</h2>'
+    +'<p>아이가 "백지의 방"에서 놀기 시작하면,<br>이곳에 성장이 차곡차곡 쌓입니다.<br>모든 기록은 이 기기 안에만 저장돼요.</p>'
+    +'<button class="btn mint" id="btn-demo" onclick="enterDemo()">샘플 데이터로 둘러보기</button>'
+    +'<a class="btn line" href="../v2/kids/" style="text-decoration:none">아이 게임 하러 가기</a>'
+    +'</div>';
+}
+
+function renderAll(){
+  var pro = getPro();
+  var pill = $("#pill-status");
+  if(pro.status==="active"){ pill.textContent="플러스"; pill.className="pill active"; }
+  else if(pro.status==="trial" && isPro(pro)){ pill.textContent="체험 D-"+trialDaysLeft(pro); pill.className="pill trial"; }
+  else if(pro.status==="expired"){ pill.textContent="체험 종료"; pill.className="pill"; }
+  else { pill.textContent="무료"; pill.className="pill"; }
+
+  $("#demobar").style.display = MODE==="demo" ? "block" : "none";
+
+  var d = currentData();
+  var app = $("#app");
+  if(MODE!=="demo" && !hasRealData(d)){
+    app.innerHTML = htmlEmpty() + htmlFooter();
+    return;
+  }
+  var m = calcMetrics(d);
+  var unlocked = isPro(pro);
+  app.innerHTML = htmlSnapshot(m) + htmlReportSection(m, unlocked) + htmlCoachSection(m, unlocked)
+    + htmlToolsSection(m, unlocked) + htmlPlusCTA(unlocked) + htmlFooter();
+}
+
+function enterDemo(){ MODE="demo"; var url=new URL(location.href); url.searchParams.set("demo","1"); history.replaceState(null,"",url.pathname+url.search); track("demo_start"); renderAll(); window.scrollTo({top:0}); }
+function exitDemo(){
+  MODE="real";
+  var url = new URL(location.href); url.searchParams.delete("demo");
+  history.replaceState(null,"",url.pathname+url.search);
+  renderAll();
+}
+
+/* ============ export: report card PNG ============ */
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function exportCard(){
+  track("report_export");
+  var m = calcMetrics(currentData());
+  var W=1080, H=1350, c=document.createElement("canvas");
+  c.width=W; c.height=H;
+  var x=c.getContext("2d");
+  var F="-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif";
+  x.fillStyle="#FAF6EE"; x.fillRect(0,0,W,H);
+  x.fillStyle="#2FB98E"; x.fillRect(0,0,W,14);
+  x.fillStyle="#8A857C"; x.font="600 34px "+F; x.fillText("백지의 방 · 부모 리포트", 72, 110);
+  x.fillStyle="#33302B"; x.font="800 72px "+F; x.fillText("이번 주 성장 리포트", 72, 200);
+  var to=new Date(), from=addDays(to,-6);
+  x.fillStyle="#8A857C"; x.font="600 36px "+F; x.fillText(fmtMD(from)+" ~ "+fmtMD(to)+(MODE==="demo"?"  ·  샘플":""), 72, 260);
+
+  var cards=[
+    {t:"꾸준함", v:m.daysThisWeek+"일 / 7일", d:"지난주 "+m.daysLastWeek+"일 → 이번 주 "+m.daysThisWeek+"일"},
+    {t:"숙련", v:m.mastered+" / 5 익힘", d:"익히는 중 "+m.learning+"개"},
+    {t:"유지 (핵심)", v:(m.reviewed===0?"복습 전":m.retained>0?m.retained+"개 기억":"쌓이는 중"), d:(m.reviewed===0?"첫 복습을 기다려요":m.retained>0?"간격 두고도 기억한 전략":"며칠 뒤 복습에서 채워져요")},
+    {t:"연속 참여", v:m.streak+"일", d:"총 "+m.totalDays+"일 참여 · 레벨 "+m.level}
+  ];
+  for(var i=0;i<4;i++){
+    var cx=72+(i%2)*480, cy=330+Math.floor(i/2)*300, hero=(i===2);
+    x.fillStyle = hero ? "#E9F8F2" : "#FFFFFF";
+    x.strokeStyle = hero ? "#2FB98E" : "#EBE4D6"; x.lineWidth=4;
+    rr(x,cx,cy,456,260,28); x.fill(); x.stroke();
+    x.fillStyle = hero ? "#1E9974" : "#8A857C"; x.font="800 34px "+F; x.fillText(cards[i].t, cx+36, cy+70);
+    x.fillStyle="#33302B"; x.font="800 64px "+F; x.fillText(cards[i].v, cx+36, cy+160);
+    x.fillStyle="#8A857C"; x.font="600 30px "+F; x.fillText(cards[i].d, cx+36, cy+215);
+  }
+
+  x.fillStyle="#33302B"; x.font="800 40px "+F; x.fillText("주간 참여 추이", 72, 1000);
+  var maxv=7, labels=["4주 전","3주 전","2주 전","최근 7일"];
+  for(var j=0;j<4;j++){
+    var bx=100+j*240, bh=Math.round(m.weekly[j]/maxv*160), by=1200-bh;
+    x.fillStyle = j===3 ? "#2FB98E" : "#CFE8DD";
+    rr(x,bx,by,140,bh||6,14); x.fill();
+    x.fillStyle="#33302B"; x.font="800 36px "+F; x.textAlign="center";
+    x.fillText(String(m.weekly[j]), bx+70, by-16);
+    x.fillStyle="#8A857C"; x.font="600 28px "+F; x.fillText(labels[j], bx+70, 1244);
+    x.textAlign="left";
+  }
+  x.fillStyle="#B7B1A5"; x.font="600 26px "+F;
+  x.fillText("감시가 아니라 축하를 · 원리는 검증, 형태는 검증 중 · baekji", 72, 1310);
+
+  var url=c.toDataURL("image/png");
+  $("#share-body").innerHTML =
+    '<div class="shead"><h3>주간 리포트 카드</h3><button class="xbtn" onclick="closeModal(\'share\')">닫기</button></div>'
+    +'<img src="'+url+'" alt="주간 리포트 카드">'
+    +'<div class="hint">사진을 길게 눌러 저장하거나, 아래 버튼으로 내려받으세요</div>'
+    +'<a class="btn mint" href="'+url+'" download="baekji-weekly-report.png" style="text-decoration:none">이미지 내려받기</a>';
+  $("#share").classList.add("on");
+}
+
+/* ============ export: ics ============ */
+function icsDate(d){ return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0"); }
+function icsStamp(){ var d=new Date(); function p(n){return String(n).padStart(2,"0");} return ""+d.getUTCFullYear()+p(d.getUTCMonth()+1)+p(d.getUTCDate())+"T"+p(d.getUTCHours())+p(d.getUTCMinutes())+p(d.getUTCSeconds())+"Z"; }
+function downloadIcs(){
+  track("ics_download");
+  var m = calcMetrics(currentData());
+  var today=new Date(); today.setHours(0,0,0,0);
+  var evts = m.dues.filter(function(e){ return e.date>=today; }).slice(0,5);
+  if(evts.length===0) evts=[{label:"복습하기", emoji:"📖", date:addDays(new Date(),1)}];
+  var stamp=icsStamp();
+  var L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//baekji//parent-report//KO","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+  evts.forEach(function(e,i){
+    L.push("BEGIN:VEVENT","UID:baekji-"+icsDate(e.date)+"-"+i+"@baekji.app",
+      "DTSTAMP:"+stamp,
+      "DTSTART;VALUE=DATE:"+icsDate(e.date),
+      "DTEND;VALUE=DATE:"+icsDate(addDays(e.date,1)),
+      "SUMMARY:"+e.emoji+" 백지의 방 복습 — "+e.label,
+      "DESCRIPTION:5분이면 충분해요. 아이가 스스로 하도록 지켜봐 주세요.",
+      "END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  var ics=L.join("\r\n");
+  var dataUrl="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics);
+  var blobUrl=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
+  // iOS Safari는 blob 다운로드를 무시하므로, 모달에 data: 링크(추가 시트)+파일 폴백을 함께 제시
+  $("#share-body").innerHTML =
+    '<div class="shead"><h3>복습일 캘린더</h3><button class="xbtn" onclick="closeModal(\'share\')">닫기</button></div>'
+    +'<p style="font-size:.88rem;margin-bottom:8px">다가오는 복습일 <b>'+evts.length+'개</b>를 캘린더에 추가해요. 다음 복습: <b>'+fmtMD(evts[0].date)+'</b></p>'
+    +'<a class="btn mint" href="'+dataUrl+'" download="baekji-review.ics" style="text-decoration:none">캘린더에 추가 (.ics)</a>'
+    +'<div class="hint" style="margin:8px 0">아이폰: 열리면 \'추가\'를 눌러 넣어요 · 안 열리면 아래로 저장</div>'
+    +'<a class="btn line" href="'+blobUrl+'" download="baekji-review.ics" style="text-decoration:none">파일로 저장</a>';
+  $("#share").classList.add("on");
+}
+
+/* ============ init ============ */
+(function init(){
+  var q=new URLSearchParams(location.search);
+  if(q.get("demo")==="1") MODE="demo";
+  track("report_view",{mode:MODE});
+  renderAll();
+})();
+</script>
+</body>
+</html>
