@@ -1,0 +1,20 @@
+{
+  "name": "백지의 방 키즈",
+  "short_name": "백지 키즈",
+  "description": "초등학생을 위한 뇌과학 공부 게임 — 넣지 말고 꺼내기! 출석 도장을 모으며 좋은 공부 습관을 만들어요.",
+  "id": "./",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "ko",
+  "dir": "ltr",
+  "background_color": "#FFF8EC",
+  "theme_color": "#3FA9F5",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
