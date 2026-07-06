@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Sayback — recall ladder (prototype)</title>
+<style>
+/* ===== design tokens (v3 GLOBAL_PLAN §9) ===== */
+:root{
+  --surface:#FFF8EC; --surface-2:#FFF3DD; --surface-card:#FFFFFF;
+  --text:#39384B; --text-soft:#5D5B72; --text-faint:#8A8798;
+  --action:#3FA9F5; --action-deep:#1E7CC4;
+  --good:#2E9E62; --good-bg:#DDF6E6;
+  --warn:#B97F0A; --warn-bg:#FFF3D1;
+  --bad:#D95548; --bad-bg:#FFE5E0;
+  --purple:#A77BF0; --line:#E8DFC9; --line-strong:#D8CBAA;
+  --focus:0 0 0 3px rgba(63,169,245,.45);
+  --fd:'Baloo 2', ui-rounded, system-ui, sans-serif;
+  --fb:'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+@font-face{font-family:'Baloo 2';src:local('Baloo 2');}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--fb);background:var(--surface);color:var(--text);line-height:1.5;
+  min-height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:430px;min-height:100vh;display:flex;flex-direction:column;position:relative;padding-bottom:env(safe-area-inset-bottom)}
+h1,h2,h3,.disp{font-family:var(--fd);font-weight:800}
+button{font-family:var(--fd);cursor:pointer;border:none;background:none;color:inherit}
+button:focus-visible{outline:none;box-shadow:var(--focus)}
+
+/* proto banner */
+.proto{background:#39384B;color:#F5EFE3;text-align:center;font-size:12px;padding:6px;font-family:var(--fb)}
+.proto b{color:var(--warn)}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:8px;padding:14px 14px 6px}
+.iconbtn{min-width:44px;min-height:44px;border-radius:12px;background:var(--surface-card);
+  border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--text-soft)}
+.dots{flex:1;display:flex;gap:7px;justify-content:center}
+.dots i{width:12px;height:12px;border-radius:99px;background:var(--line-strong);display:block;transition:background .2s}
+.dots i.done{background:var(--good)}
+.dots i.now{background:var(--action);outline:3px solid rgba(63,169,245,.28);outline-offset:2px}
+
+/* prompt head */
+.head{text-align:center;padding:8px 26px 0}
+.head h2{font-size:23px}
+.head p{font-size:16px;color:var(--text-soft);margin-top:2px}
+
+/* recall card */
+.stage{flex:1;display:flex;flex-direction:column;padding:16px 20px 0}
+.card{background:var(--surface-card);border:2px solid var(--line);border-radius:20px;overflow:hidden}
+.card.reveal{border-color:var(--good)}
+.cardtop{padding:26px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.cardtop .ic{width:66px;height:66px}
+.cardtop .q{font-size:16px;color:var(--text-soft);max-width:22ch}
+.face{font-family:var(--fd);font-weight:800;font-size:15px;color:var(--text-soft);letter-spacing:.3px;
+  display:flex;align-items:center;gap:8px;justify-content:center;border-top:2px dashed var(--line);padding:12px}
+.answer{font-family:var(--fd);font-weight:800;font-size:24px;color:var(--good)}
+
+/* cue */
+.cue{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:2px}
+.cue .blk{font-family:var(--fd);letter-spacing:4px;font-size:20px;color:var(--warn);background:var(--warn-bg);
+  border:2px solid #F0DFAE;border-radius:12px;padding:8px 14px}
+
+/* support row */
+.support{display:flex;gap:10px;padding:14px 20px 0}
+.chip{flex:1;min-height:48px;border-radius:14px;border:2px solid var(--line);background:var(--surface-card);
+  color:var(--text-soft);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:7px}
+.chip.on{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
+
+/* choices (locked until 2 fails) */
+.choices{padding:14px 20px 0}
+.choices h3{font-size:14px;color:var(--text-soft);text-transform:uppercase;letter-spacing:.5px;margin:0 2px 8px;font-family:var(--fb);font-weight:700}
+.choicegrid{display:grid;gap:9px}
+.choice{min-height:56px;border-radius:14px;border:2.5px solid var(--action);background:var(--surface-card);
+  color:var(--action-deep);font-weight:700;font-size:18px}
+.choice.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);animation:shake .3s}
+.choice.right{border-color:var(--good);background:var(--good-bg);color:var(--good)}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.lockedmsg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:15px;color:var(--text-faint);
+  font-weight:700;font-family:var(--fb);padding:6px 0}
+
+/* typing opt-in */
+.typewrap{padding:10px 20px 0}
+.typelink{width:100%;text-align:center;font-size:15px;color:var(--action-deep);font-weight:700;text-decoration:underline;min-height:44px;font-family:var(--fb)}
+.typebox{display:flex;gap:8px;margin-top:6px}
+.typebox input{flex:1;min-height:52px;border-radius:14px;border:2.5px solid var(--action);padding:0 16px;font-size:18px;font-family:var(--fb);color:var(--text)}
+.typebox input:focus{outline:none;box-shadow:var(--focus)}
+.typebox button{min-width:64px;border-radius:14px;background:var(--action);color:#fff;font-weight:800;font-size:16px;border:2px solid var(--action-deep)}
+
+/* bottom actions */
+.actions{padding:16px 20px calc(18px + env(safe-area-inset-bottom));display:grid;gap:10px;margin-top:auto}
+.btn{min-height:56px;border-radius:16px;font-weight:800;font-size:19px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.go{background:var(--good);color:#fff;border:2.5px solid #1F8A50}
+.btn.pri{background:var(--action);color:#fff;border:2.5px solid var(--action-deep)}
+.btn.sec{background:var(--surface-card);color:var(--action-deep);border:2.5px solid var(--action)}
+.reassure{text-align:center;font-size:15px;color:var(--text-soft);font-weight:700}
+
+/* result */
+.result{flex:1;display:flex;flex-direction:column;align-items:center;padding:40px 24px 0;text-align:center}
+.result .big{font-size:28px;margin-top:14px}
+.rrow{display:grid;gap:10px;width:100%;margin-top:24px}
+.rline{display:flex;align-items:center;gap:12px;background:var(--surface-card);border:2px solid var(--line);border-radius:16px;padding:14px 16px;text-align:left}
+.rline .rn{font-family:var(--fd);font-weight:800;font-size:22px;min-width:28px}
+.rline .rl{font-size:16px;line-height:1.3}
+.rline.a{border-color:var(--good)} .rline.a .rn{color:var(--good)}
+.rline.b .rn{color:var(--warn)}
+.rline.c .rn{color:var(--action-deep)}
+.note{font-size:15px;color:var(--text-soft);margin-top:18px;line-height:1.45}
+.mascot{width:96px;height:96px;border-radius:99px;background:var(--surface-2);border:3px dashed var(--line-strong);
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-soft);font-weight:700;text-align:center;line-height:1.2}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="proto">⚗️ <b>prototype</b> — recall ladder (T4). No real content pipeline.</div>
+
+  <!-- ======= GAME ======= -->
+  <div id="game">
+    <div class="top">
+      <button class="iconbtn" aria-label="Back">‹</button>
+      <div class="dots" id="dots"></div>
+      <span style="min-width:44px"></span>
+    </div>
+    <div class="head">
+      <h2 id="headTitle">Say what you remember!</h2>
+      <p id="headSub">Out loud, in your own words.</p>
+    </div>
+    <div class="stage">
+      <div class="card" id="card">
+        <div class="cardtop">
+          <div class="ic" id="ic"></div>
+          <div class="answer hidden" id="answer"></div>
+          <div class="q" id="q"></div>
+          <div class="cue hidden" id="cueRow"><span class="blk" id="cueBlk"></span></div>
+        </div>
+        <div class="face" id="face">🃏 Card is face-down until you say it</div>
+      </div>
+
+      <!-- support: cue button (always available, does NOT escalate) -->
+      <div class="support" id="support">
+        <button class="chip" id="cueBtn">Aa first letters</button>
+      </div>
+
+      <!-- typing opt-in (never forced) -->
+      <div class="typewrap" id="typewrap">
+        <button class="typelink" id="typeLink">Type it instead ⌨️</button>
+        <div class="typebox hidden" id="typeBox">
+          <input id="typeInput" type="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="type what you remember…" aria-label="Type your answer">
+          <button id="typeSubmit">Check</button>
+        </div>
+      </div>
+
+      <!-- choices: LOCKED until 2 fails on this concept -->
+      <div class="choices hidden" id="choicesWrap">
+        <h3>Still stuck? Pick the one you meant:</h3>
+        <div class="choicegrid" id="choiceGrid"></div>
+      </div>
+      <div class="lockedmsg" id="lockedMsg">
+        <svg width="18" height="18" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2" fill="#FFC93C" stroke="#39384B" stroke-width="1.6"/><path d="M8 10 V7 a4 4 0 0 1 8 0 v3" fill="none" stroke="#39384B" stroke-width="1.8"/></svg>
+        <span>Choices unlock after 2 tries — recall first!</span>
+      </div>
+
+      <!-- bottom actions (swapped by state) -->
+      <div class="actions" id="actions"></div>
+    </div>
+  </div>
+
+  <!-- ======= RESULT ======= -->
+  <div id="result" class="hidden">
+    <div class="result">
+      <div class="mascot">Lumo<br>proud</div>
+      <h1 class="big" id="resTitle"></h1>
+      <div class="rrow">
+        <div class="rline a"><span class="rn" id="nStrong">0</span><span class="rl">remembered on your own <span style="color:var(--text-soft)">(strongest)</span></span></div>
+        <div class="rline b"><span class="rn" id="nCue">0</span><span class="rl">remembered with a little cue</span></div>
+        <div class="rline c"><span class="rn" id="nChoice">0</span><span class="rl">found it in the choices</span></div>
+      </div>
+      <p class="note">Only <b>on-your-own</b> recalls count toward "still remembers it 3 days later" in the parent report. The rest are practice — and that's how memory gets stronger.</p>
+      <div class="actions" style="width:100%">
+        <button class="btn go" onclick="location.reload()">Done for today ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CONTENT SCHEMA (language-independent scoring by concept id)
+   In production: label/cue/keywords come from locales/<lang>/content.json,
+   distractors authored per concept, icons from the SVG set.
+   ========================================================= */
+var CONTENT = [
+  { id:"shelf",    label:"Big picture first", cue:"B_ _   P_ _ _ _ _ _   F_ _ _ _",
+    keywords:["big","picture","whole","overview","map","first"],
+    distractors:["Read it twice","Copy it all out"],
+    icon:'<svg viewBox="0 0 24 24" width="66" height="66"><rect x="3" y="4" width="18" height="14" rx="2" fill="#FFF8EC" stroke="#39384B" stroke-width="1.4"/><path d="M6 14 l4-5 3 3 5-6" fill="none" stroke="#3FA9F5" stroke-width="1.8"/></svg>' },
+  { id:"question", label:"Ask why", cue:"A_ _   W_ _",
+    keywords:["ask","why","question","reason","because"],
+    distractors:["Ask who","Ask when"],
+    icon:'<svg viewBox="0 0 24 24" width="66" height="66"><path d="M9 9 a3.5 3.5 0 1 1 5 3.2 c-1.4.7-2 1.4-2 2.8" fill="none" stroke="#A77BF0" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="19" r="1.6" fill="#A77BF0"/></svg>' },
+  { id:"sayout",   label:"Say it out", cue:"S_ _   I_   O_ _",
+    keywords:["say","out","aloud","tell","speak","talk"],
+    distractors:["Write it down","Look again"],
+    icon:'<svg viewBox="0 0 24 24" width="66" height="66"><path d="M4 9 h5 l5-4 v14 l-5-4 H4 z" fill="#FFC93C" stroke="#39384B" stroke-width="1.4" stroke-linejoin="round"/><path d="M17 8 a5 5 0 0 1 0 8" fill="none" stroke="#3FA9F5" stroke-width="1.8" stroke-linecap="round"/></svg>' },
+  { id:"gaps",     label:"Fill the gaps", cue:"F_ _ _   T_ _   G_ _ _",
+    keywords:["fill","gap","gaps","hole","missing","blank"],
+    distractors:["Skip the gaps","Count the gaps"],
+    icon:'<svg viewBox="0 0 24 24" width="66" height="66"><circle cx="10" cy="10" r="6" fill="none" stroke="#3FA9F5" stroke-width="2.2"/><path d="M15 15 l5 5" stroke="#3FA9F5" stroke-width="2.4" stroke-linecap="round"/></svg>' },
+  { id:"teach",    label:"Teach a friend", cue:"T_ _ _ _   A   F_ _ _ _ _",
+    keywords:["teach","friend","explain","show","tell"],
+    distractors:["Beat a friend","Text a friend"],
+    icon:'<svg viewBox="0 0 24 24" width="66" height="66"><circle cx="8" cy="9" r="3" fill="#FF7A6B"/><circle cx="16" cy="9" r="3" fill="#3FA9F5"/><path d="M4 20 c0-4 8-4 8-4 s8 0 8 4" fill="none" stroke="#39384B" stroke-width="2"/></svg>' },
+];
+
+var FAIL_THRESHOLD = 2; // choices unlock strictly after this many self-reported fails
+
+/* per-concept runtime state */
+var state = CONTENT.map(function(){ return { fails:0, revealed:false, cueShown:false, typing:false, done:false, via:null }; });
+var idx = 0;
+
+var el = function(id){ return document.getElementById(id); };
+
+function shuffle(arr){ // Fisher-Yates (browser Math.random is fine here)
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; }
+  return a;
+}
+
+function renderDots(){
+  el("dots").innerHTML = CONTENT.map(function(c,i){
+    var cls = state[i].done ? "done" : (i===idx ? "now" : "");
+    return '<i class="'+cls+'"></i>';
+  }).join("");
+}
+
+function choicesUnlocked(i){ return state[i].fails >= FAIL_THRESHOLD; }
+
+function render(){
+  var c = CONTENT[idx], s = state[idx];
+  renderDots();
+
+  // icon + question
+  el("ic").innerHTML = c.icon;
+  el("q").textContent = "What is this trick, and when do you use it?";
+
+  // answer reveal
+  el("answer").textContent = c.label;
+  el("answer").classList.toggle("hidden", !s.revealed);
+  el("card").classList.toggle("reveal", s.revealed);
+  el("q").classList.toggle("hidden", s.revealed);
+
+  // face line
+  el("face").classList.toggle("hidden", s.revealed);
+
+  // cue
+  el("cueBlk").textContent = c.cue;
+  el("cueRow").classList.toggle("hidden", !s.cueShown);
+  el("cueBtn").classList.toggle("on", s.cueShown);
+  el("cueBtn").textContent = s.cueShown ? "First letters shown" : "Aa first letters";
+
+  // header
+  if(s.fails >= FAIL_THRESHOLD){
+    el("headTitle").textContent = "Almost there!";
+    el("headSub").textContent = "You've tried twice — here's a hand.";
+  } else {
+    el("headTitle").textContent = "Say what you remember!";
+    el("headSub").textContent = "Out loud, in your own words.";
+  }
+
+  // choices lock/unlock
+  var unlocked = choicesUnlocked(idx);
+  el("choicesWrap").classList.toggle("hidden", !unlocked);
+  el("lockedMsg").classList.toggle("hidden", unlocked || s.revealed);
+  if(unlocked){
+    var opts = shuffle([c.label, c.distractors[0], c.distractors[1]]);
+    el("choiceGrid").innerHTML = opts.map(function(o){
+      return '<button class="choice" data-opt="'+encodeURIComponent(o)+'">'+o+'</button>';
+    }).join("");
+    Array.prototype.forEach.call(el("choiceGrid").querySelectorAll(".choice"), function(b){
+      b.addEventListener("click", function(){ onChoice(b, c); });
+    });
+  }
+
+  // typing box visibility
+  el("typeBox").classList.toggle("hidden", !s.typing);
+  el("typeLink").classList.toggle("hidden", s.typing);
+
+  // bottom actions
+  var A = el("actions");
+  if(!s.revealed){
+    A.innerHTML =
+      '<button class="btn go" id="flipBtn">I said it — flip the card ✓</button>' +
+      '<p class="reassure">No mic. Nobody records you.</p>';
+    el("flipBtn").addEventListener("click", flip);
+  } else {
+    A.innerHTML =
+      '<button class="btn pri" id="gotBtn">I got it! ✓</button>' +
+      '<button class="btn sec" id="missBtn">Not quite — try again</button>';
+    el("gotBtn").addEventListener("click", function(){ finish("recall_self"); });
+    el("missBtn").addEventListener("click", miss);
+  }
+}
+
+function flip(){ state[idx].revealed = true; render(); }
+
+function miss(){
+  var s = state[idx];
+  s.fails += 1;
+  s.revealed = false;
+  s.cueShown = true;           // after a miss, cue is offered as support (not a further fail)
+  render();
+}
+
+function showCue(){ state[idx].cueShown = true; render(); }
+
+function toggleTyping(){ state[idx].typing = true; render(); setTimeout(function(){ el("typeInput").focus(); }, 30); }
+
+function submitTyping(){
+  var c = CONTENT[idx];
+  var val = (el("typeInput").value || "").toLowerCase();
+  var hit = c.keywords.some(function(k){ return val.indexOf(k) !== -1; });
+  if(hit){ finish("recall_typed"); }
+  else {
+    // typed but no keyword match = a miss (same escalation as self-report)
+    var s = state[idx];
+    s.fails += 1; s.cueShown = true; s.typing = false;
+    el("typeInput").value = "";
+    render();
+  }
+}
+
+function onChoice(btn, c){
+  var picked = decodeURIComponent(btn.getAttribute("data-opt"));
+  if(picked === c.label){
+    btn.classList.add("right");
+    setTimeout(function(){ finish("choice"); }, 350);
+  } else {
+    btn.classList.add("wrong");
+    setTimeout(function(){ btn.classList.remove("wrong"); }, 350);
+  }
+}
+
+function finish(via){
+  var s = state[idx];
+  s.done = true;
+  // classify recall strength for the parent-report retention signal
+  if(via === "recall_self" || via === "recall_typed"){
+    s.via = (s.fails === 0 && !s.cueShown) ? "strong" : "cued";
+  } else if(via === "choice"){
+    s.via = "choice";
+  }
+  // next pending concept
+  var next = -1;
+  for(var i=0;i<CONTENT.length;i++){ if(!state[i].done){ next=i; break; } }
+  if(next === -1){ showResult(); return; }
+  idx = next;
+  render();
+}
+
+function showResult(){
+  var strong=0, cued=0, choice=0;
+  state.forEach(function(s){
+    if(s.via === "strong") strong++;
+    else if(s.via === "cued") cued++;
+    else if(s.via === "choice") choice++;
+  });
+  el("game").classList.add("hidden");
+  el("result").classList.remove("hidden");
+  el("resTitle").textContent = "You pulled out " + (strong+cued+choice) + " of " + CONTENT.length + "!";
+  el("nStrong").textContent = strong;
+  el("nCue").textContent = cued;
+  el("nChoice").textContent = choice;
+}
+
+/* wire persistent controls */
+el("cueBtn").addEventListener("click", showCue);
+el("typeLink").addEventListener("click", toggleTyping);
+el("typeSubmit").addEventListener("click", submitTyping);
+el("typeInput") && el("typeInput").addEventListener("keydown", function(e){ if(e.key === "Enter") submitTyping(); });
+
+/* ===== self-test hooks (read by the QA harness) ===== */
+window.__ladder = {
+  choicesUnlocked: choicesUnlocked,
+  failThreshold: FAIL_THRESHOLD,
+  state: function(){ return state; },
+  current: function(){ return idx; },
+  forceMiss: function(){ miss(); },
+  usesMic: false
+};
+
+render();
+</script>
+</body>
+</html>
