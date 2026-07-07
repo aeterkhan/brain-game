@@ -192,7 +192,7 @@
   .seqitem .lbl small{display:block;font-family:'Gaegu',cursive;font-weight:400;font-size:.92rem;color:var(--ink-soft)}
   .handle{flex:none;width:40px;height:40px;display:grid;place-items:center;color:var(--ink-soft);font-size:1.5rem;line-height:1;cursor:grab;border-radius:11px;touch-action:none}
   .movebtns{flex:none;display:flex;flex-direction:column;gap:5px}
-  .movebtn{width:46px;height:34px;display:grid;place-items:center;border:2px solid var(--line);background:#fff;color:var(--blue);font-size:1rem;line-height:1;border-radius:10px;touch-action:manipulation}
+  .movebtn{width:46px;height:40px;display:grid;place-items:center;border:2px solid var(--line);background:#fff;color:var(--blue);font-size:1rem;line-height:1;border-radius:10px;touch-action:manipulation}
   .movebtn:active{background:var(--blue-wash)}
   .movebtn:disabled{opacity:.32;color:var(--ink-soft)}
   .seqitem.dragging{box-shadow:0 16px 30px -10px var(--shadow);border-color:var(--blue);background:#fff;cursor:grabbing;position:relative}
@@ -248,7 +248,7 @@
   .todaystamp .tcap span{display:block;font-size:1rem;color:var(--ink-soft);margin-top:2px}
   .stamphead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0 6px}
   .stamphead h2{margin:0;font-size:1.15rem}
-  .seehist{font-family:'Jua',sans-serif;font-size:1rem;color:#fff;background:var(--blue);border:none;cursor:pointer;padding:7px 13px;border-radius:99px}
+  .seehist{font-family:'Jua',sans-serif;font-size:1rem;color:#fff;background:var(--blue);border:none;cursor:pointer;padding:9px 16px;border-radius:99px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
   .stampstat{font-family:'Jua',sans-serif;font-size:1.08rem;color:var(--ink)}
   .stampstat b{color:var(--coral)}
   .seal2{font-family:'Jua',sans-serif;color:#fff;background:var(--coral);width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:1rem;transform:rotate(-7deg);box-shadow:0 3px 0 #E8604F}
@@ -261,7 +261,7 @@
   .viewtoggle .seg{font:inherit;font-family:'Jua',sans-serif;font-size:1.05rem;border:none;background:#fff;color:var(--ink-soft);padding:9px 26px;cursor:pointer;transition:.2s}
   .viewtoggle .seg.on{background:var(--blue);color:#fff}
   .calnav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px}
-  .calnav .navbtn{font:inherit;font-size:1.3rem;border:3px solid var(--line);background:#fff;color:var(--ink);width:40px;height:40px;border-radius:12px;cursor:pointer;display:grid;place-items:center}
+  .calnav .navbtn{font:inherit;font-size:1.3rem;border:3px solid var(--line);background:#fff;color:var(--ink);width:44px;height:44px;border-radius:12px;cursor:pointer;display:grid;place-items:center}
   .calnav .navbtn:disabled{opacity:.3;cursor:not-allowed}
   .calnav .callabel{font-family:'Jua',sans-serif;font-size:1.2rem;min-width:130px;text-align:center}
   .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
@@ -1407,7 +1407,7 @@ function rResult(){
 
     <div class="actions">
       <button class="btn btn-ghost" onclick="restart()">🏠 홈으로</button>
-      <button class="btn btn-primary grow" onclick="practiceRetrieve()">✏️ 꺼내기만 또 연습</button>
+      <button class="btn btn-primary grow" onclick="practiceRetrieve()">✏️ 또 꺼내기</button>
     </div>`;
   setTimeout(()=>{const f=document.getElementById('fill');if(f)f.style.width=pct+"%";},120);
   syncClock();
