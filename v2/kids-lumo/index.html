@@ -189,7 +189,7 @@
   .seqitem .lbl small{display:block;font-family:'Gaegu',cursive;font-weight:400;font-size:.92rem;color:var(--ink-soft)}
   .handle{flex:none;width:40px;height:40px;display:grid;place-items:center;color:var(--ink-soft);font-size:1.5rem;line-height:1;cursor:grab;border-radius:11px;touch-action:none}
   .movebtns{flex:none;display:flex;flex-direction:column;gap:5px}
-  .movebtn{width:46px;height:34px;display:grid;place-items:center;border:2px solid var(--line);background:#fff;color:var(--blue);font-size:1rem;line-height:1;border-radius:10px;touch-action:manipulation}
+  .movebtn{width:46px;height:40px;display:grid;place-items:center;border:2px solid var(--line);background:#fff;color:var(--blue);font-size:1rem;line-height:1;border-radius:10px;touch-action:manipulation}
   .movebtn:active{background:var(--blue-wash)}
   .movebtn:disabled{opacity:.32;color:var(--ink-soft)}
   .seqitem.dragging{box-shadow:0 16px 30px -10px var(--shadow);border-color:var(--blue);background:#fff;cursor:grabbing;position:relative}
@@ -245,7 +245,7 @@
   .todaystamp .tcap span{display:block;font-size:1rem;color:var(--ink-soft);margin-top:2px}
   .stamphead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0 6px}
   .stamphead h2{margin:0;font-size:1.15rem}
-  .seehist{font-family:'Jua',sans-serif;font-size:1rem;color:#fff;background:var(--blue);border:none;cursor:pointer;padding:7px 13px;border-radius:99px}
+  .seehist{font-family:'Jua',sans-serif;font-size:1rem;color:#fff;background:var(--blue);border:none;cursor:pointer;padding:9px 16px;border-radius:99px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
   .stampstat{font-family:'Jua',sans-serif;font-size:1.08rem;color:var(--ink)}
   .stampstat b{color:var(--coral)}
   .seal2{font-family:'Jua',sans-serif;color:#fff;background:var(--coral);width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:1rem;transform:rotate(-7deg);box-shadow:0 3px 0 #E8604F}
@@ -258,7 +258,7 @@
   .viewtoggle .seg{font:inherit;font-family:'Jua',sans-serif;font-size:1.05rem;border:none;background:#fff;color:var(--ink-soft);padding:9px 26px;cursor:pointer;transition:.2s}
   .viewtoggle .seg.on{background:var(--blue);color:#fff}
   .calnav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px}
-  .calnav .navbtn{font:inherit;font-size:1.3rem;border:3px solid var(--line);background:#fff;color:var(--ink);width:40px;height:40px;border-radius:12px;cursor:pointer;display:grid;place-items:center}
+  .calnav .navbtn{font:inherit;font-size:1.3rem;border:3px solid var(--line);background:#fff;color:var(--ink);width:44px;height:44px;border-radius:12px;cursor:pointer;display:grid;place-items:center}
   .calnav .navbtn:disabled{opacity:.3;cursor:not-allowed}
   .calnav .callabel{font-family:'Jua',sans-serif;font-size:1.2rem;min-width:130px;text-align:center}
   .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
@@ -759,13 +759,13 @@ function bootApp(){
   state.screen='home';
   render();
 }
-function startFull(){
+function startFull(){ try{if(window.bx)bx('game_start');}catch(e){}
   clearSession(); newQuizRound();
   state.mode="full"; state.resumed=false; state._resumeScreen=null;
   Store.patch(p=>p.progress={active:true,startedAt:new Date().toISOString(),screen:'stage1'});
   go('stage1');
 }
-function resumeSession(){ if(state._resumeScreen)go(state._resumeScreen); }
+function resumeSession(){ try{if(window.bx)bx('resume_used');}catch(e){} if(state._resumeScreen)go(state._resumeScreen); }
 function goHome(){ state.mode="full"; go('home'); }
 
 /* ---------- HOME (대시보드) — kids ---------- */
@@ -872,7 +872,7 @@ function toggleReviewCk(id){
   const el=document.querySelector(`.ck[data-id="${id}"]`);
   if(el)el.classList.toggle('hit',state.reviewChecks[id]);
 }
-function finishReview(){
+function finishReview(){ try{if(window.bx)bx('review_done');}catch(e){}
   const tk=todayKey(); let hit=0;
   Store.patch(p=>{
     state.reviewQueue.forEach(id=>{ const got=state.reviewChecks[id]?1:0; hit+=got; SRS.schedule(p.concepts[id],got?2:0,tk); });
@@ -1327,7 +1327,7 @@ function applyConceptGrades(p,tk){
     SRS.schedule(p.concepts[id],grade,tk);
   });
 }
-function finishStage5(){
+function finishStage5(){ try{if(window.bx)bx('game_complete');}catch(e){}
   stampToday();
   const {g}=totalScore();
   const tk=todayKey();
@@ -1414,12 +1414,12 @@ function rResult(){
 
     <div class="actions">
       <button class="btn btn-ghost" onclick="restart()">🏠 홈으로</button>
-      <button class="btn btn-primary grow" onclick="practiceRetrieve()">✏️ 꺼내기만 또 연습</button>
+      <button class="btn btn-primary grow" onclick="practiceRetrieve()">✏️ 또 꺼내기</button>
     </div>`;
   setTimeout(()=>{const f=document.getElementById('fill');if(f)f.style.width=pct+"%";},120);
   syncClock();
 }
-function practiceRetrieve(){
+function practiceRetrieve(){ try{if(window.bx)bx('practice_used');}catch(e){}
   if(state.timer.id)clearInterval(state.timer.id);
   state.timer.running=false; clearTimerAlert();
   // '꺼내기만 또 연습'은 단일 인출 드릴 — 스테이지 4·5로 이어지지 않고,
@@ -1525,6 +1525,34 @@ function restart(){
 /* ============================ BOOT ============================ */
 newQuizRound();
 bootApp();
+</script>
+<!-- bx — 프라이버시 안전 이용패턴 계측: 쿠키리스·집계·이벤트명 enum만(PII/아동입력 미수집). GoatCounter 이벤트로 전송. -->
+<script>
+(function(){
+  window.bxq=window.bxq||[];
+  function send(nm){ if(window.goatcounter&&window.goatcounter.count){window.goatcounter.count({path:'evt/'+nm,title:nm,event:true});}else{window.bxq.push(nm);} }
+  window.bx=function(name){
+    try{name=String(name).slice(0,40).replace(/[^a-zA-Z0-9_./-]/g,'');}catch(e){return;}
+    if(!name)return;
+    try{var k='baekji.bx.events',a=JSON.parse(localStorage.getItem(k)||'[]');a.push({n:name,t:Date.now()});if(a.length>120)a=a.slice(-120);localStorage.setItem(k,JSON.stringify(a));}catch(e){}
+    send(name);
+  };
+  // A/B 변이: 기기로컬 시드 기반 결정적 배정(식별자 전송 없음)
+  window.bxVariant=function(exp,n){
+    n=n||2; var s;
+    try{s=localStorage.getItem('baekji.bx.seed');if(!s){s=String(Math.floor(Math.random()*1e9));localStorage.setItem('baekji.bx.seed',s);}}catch(e){s='0';}
+    var str=exp+':'+s,h=0;for(var i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0;} return h%n;
+  };
+  // GoatCounter 로드 후 대기열 flush
+  window.addEventListener('load',function(){var t=0,iv=setInterval(function(){if(window.goatcounter&&window.goatcounter.count){window.bxq.splice(0).forEach(function(nm){window.goatcounter.count({path:'evt/'+nm,title:nm,event:true});});clearInterval(iv);}else if(++t>25)clearInterval(iv);},300);});
+  // 세션 1회: 디바이스 클래스·뷰포트 버킷 분포(개선 판단용)
+  try{ if(!sessionStorage.getItem('baekji.bx.sess')){ sessionStorage.setItem('baekji.bx.sess','1');
+    var w=Math.round(innerWidth), dev=w<768?'mobile':w<1024?'tablet':'desktop';
+    var bk=[320,360,390,414,768,834,1024,1280,1440], b=bk.reduce(function(a,c){return Math.abs(c-w)<Math.abs(a-w)?c:a;});
+    window.bx('device/'+dev); window.bx('vw/'+b);
+  }}catch(e){}
+  window.addEventListener('error',function(){try{window.bx('error/js');}catch(e){}});
+})();
 </script>
 <!-- 방문자 분석 (비공개 대시보드: https://brain-game.goatcounter.com) · 쿠키 없음 -->
 <script data-goatcounter="https://brain-game.goatcounter.com/count"

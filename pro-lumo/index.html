@@ -37,7 +37,7 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,246,238,.92);backdro
 .pill{font-size:.74rem;font-weight:700;padding:5px 11px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--soft)}
 .pill.trial{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
 .pill.active{border-color:var(--mint-d);color:var(--mint-d);background:var(--mint-bg)}
-.gearbtn{font-size:.78rem;font-weight:700;color:var(--soft);padding:6px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--card)}
+.gearbtn{font-size:.78rem;font-weight:700;color:var(--soft);padding:6px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);min-height:40px;display:inline-flex;align-items:center}
 
 /* ---------- banners ---------- */
 .protobar{background:#3A3630;color:#F5EFE3;text-align:center;font-size:.74rem;padding:7px 12px;letter-spacing:.2px}
@@ -149,7 +149,7 @@ section{margin-bottom:22px}
 @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:translateY(0);opacity:1}}
 .sheet .shead{display:flex;align-items:center;margin-bottom:12px}
 .sheet .shead h3{font-size:1.05rem;font-weight:800;flex:1}
-.xbtn{font-size:.8rem;font-weight:700;color:var(--soft);padding:6px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--card)}
+.xbtn{font-size:.8rem;font-weight:700;color:var(--soft);padding:6px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);min-height:40px;display:inline-flex;align-items:center}
 .bene{display:grid;gap:7px;margin:12px 0}
 .bene .bi{display:flex;gap:9px;font-size:.86rem;align-items:flex-start}
 .bene .bi .ic{color:var(--mint-d);font-weight:800}
@@ -267,6 +267,7 @@ function fmtMD(d){ return (d.getMonth()+1)+"월 "+d.getDate()+"일"; }
 function won(n){ return n.toLocaleString("ko-KR")+"원"; }
 
 function track(name, meta){
+    try{if(window.bx)bx(name);}catch(_){}
   try{
     var log = JSON.parse(localStorage.getItem(EVT_KEY)) || [];
     log.push({t:new Date().toISOString(), name:name, meta:meta||null});
@@ -784,6 +785,36 @@ function downloadIcs(){
   if(q.get("demo")==="1") MODE="demo";
   track("report_view",{mode:MODE});
   renderAll();
+})();
+</script>
+<!-- 방문자 분석 (비공개 대시보드) · 쿠키 없음 -->
+<script data-goatcounter="https://brain-game.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<!-- bx — 프라이버시 안전 이용패턴 계측: 쿠키리스·집계·이벤트명 enum만(PII/아동입력 미수집). GoatCounter 이벤트로 전송. -->
+<script>
+(function(){
+  window.bxq=window.bxq||[];
+  function send(nm){ if(window.goatcounter&&window.goatcounter.count){window.goatcounter.count({path:'evt/'+nm,title:nm,event:true});}else{window.bxq.push(nm);} }
+  window.bx=function(name){
+    try{name=String(name).slice(0,40).replace(/[^a-zA-Z0-9_./-]/g,'');}catch(e){return;}
+    if(!name)return;
+    try{var k='baekji.bx.events',a=JSON.parse(localStorage.getItem(k)||'[]');a.push({n:name,t:Date.now()});if(a.length>120)a=a.slice(-120);localStorage.setItem(k,JSON.stringify(a));}catch(e){}
+    send(name);
+  };
+  // A/B 변이: 기기로컬 시드 기반 결정적 배정(식별자 전송 없음)
+  window.bxVariant=function(exp,n){
+    n=n||2; var s;
+    try{s=localStorage.getItem('baekji.bx.seed');if(!s){s=String(Math.floor(Math.random()*1e9));localStorage.setItem('baekji.bx.seed',s);}}catch(e){s='0';}
+    var str=exp+':'+s,h=0;for(var i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0;} return h%n;
+  };
+  // GoatCounter 로드 후 대기열 flush
+  window.addEventListener('load',function(){var t=0,iv=setInterval(function(){if(window.goatcounter&&window.goatcounter.count){window.bxq.splice(0).forEach(function(nm){window.goatcounter.count({path:'evt/'+nm,title:nm,event:true});});clearInterval(iv);}else if(++t>25)clearInterval(iv);},300);});
+  // 세션 1회: 디바이스 클래스·뷰포트 버킷 분포(개선 판단용)
+  try{ if(!sessionStorage.getItem('baekji.bx.sess')){ sessionStorage.setItem('baekji.bx.sess','1');
+    var w=Math.round(innerWidth), dev=w<768?'mobile':w<1024?'tablet':'desktop';
+    var bk=[320,360,390,414,768,834,1024,1280,1440], b=bk.reduce(function(a,c){return Math.abs(c-w)<Math.abs(a-w)?c:a;});
+    window.bx('device/'+dev); window.bx('vw/'+b);
+  }}catch(e){}
+  window.addEventListener('error',function(){try{window.bx('error/js');}catch(e){}});
 })();
 </script>
 </body>
