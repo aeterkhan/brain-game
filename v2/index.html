@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <!-- v2(게임화 강화판)는 URL을 아는 사람만: 검색엔진 노출 차단 -->
 <meta name="robots" content="noindex, nofollow" />
 <title>백지의 방 · 뇌과학 공부법 체득 게임 (v2)</title>
@@ -184,6 +184,10 @@
   .seqitem .lbl{flex:1;font-weight:700;font-size:1rem;pointer-events:none}
   .seqitem .lbl small{display:block;font-weight:400;font-size:.78rem;color:var(--ink-soft)}
   .handle{flex:none;width:38px;height:38px;display:grid;place-items:center;color:var(--ink-soft);font-size:1.35rem;line-height:1;cursor:grab;border-radius:9px;touch-action:none;transition:background .15s,color .15s}
+  .movebtns{flex:none;display:flex;flex-direction:column;gap:5px}
+  .movebtn{width:44px;height:38px;display:grid;place-items:center;border:1.5px solid var(--line);background:var(--card);color:var(--teal);font-size:.95rem;line-height:1;border-radius:9px;touch-action:manipulation;cursor:pointer}
+  .movebtn:active{background:var(--paper)}
+  .movebtn:disabled{opacity:.32;color:var(--ink-soft)}
   @media(hover:hover){.handle:hover{background:var(--card);color:var(--teal)}}
   .seqitem.dragging{box-shadow:0 14px 30px -10px var(--shadow);border-color:var(--teal);background:var(--card);cursor:grabbing;position:relative}
   .seqitem.dragging .handle{cursor:grabbing;color:var(--teal)}
@@ -505,9 +509,10 @@ const state = {
   maxCombo:0,        // 이 세션 최고 콤보
   sessionXp:0,       // 이 판에서 번 XP(결과 리포트용)
   wrongConcepts:[],  // 이 판에서 틀린 개념 id (오답→복습카드)
-  mode:"full",       // "full"=5단계 정규 / "review"=복습 세션
+  mode:"full",       // "full"=5단계 정규 / "review"=복습 세션 / "practice"=인출 드릴
   reviewQueue:[],    // 복습 세션 대상 개념 id 목록
-  resumed:false      // 이어하기로 복원된 세션인지
+  resumed:false,     // 이어하기로 복원된 세션인지
+  practice:false     // '다시 연습'(단일 인출 드릴) 여부
 };
 const SCREENS=["intro","stage1","stage2","stage3","stage4","stage5","result"];
 const stageEl=document.getElementById('stage');
@@ -759,19 +764,19 @@ function go(s){ state.screen=s; snapshotProgress(); render(); }
 /* ---------- 진도 저장 / 이어하기 ---------- */
 const IN_SESSION=["stage1","stage2","stage3","stage4","stage5"];
 function snapshotProgress(){
-  // 정규 5단계 진행 중에만 active 스냅샷 저장. home/intro/result/review/history 는 미저장.
   if(state.mode!=="full"){ return; }
-  const active=IN_SESSION.includes(state.screen);
+  // 세션 스테이지에서만 진도 기록. 홈/기록/intro 등 세션 밖 화면에선 기존 진도 보존 → '이어서 하기' 유지.
+  if(!IN_SESSION.includes(state.screen)){ return; }
   Store.patch(p=>{
     const started=(p.progress&&p.progress.startedAt)||new Date().toISOString();
-    p.progress = active ? {
+    p.progress = {
       active:true, startedAt:started, screen:state.screen,
       scoreParts:state.scoreParts, seen:Array.from(state.seen),
       quiz2:state.quiz2, quiz4:state.quiz4, q2ans:state.q2ans, q4ans:state.q4ans,
       retrieveText:state.retrieveText, retrieveChecks:state.retrieveChecks, retrieveRevealed:state.retrieveRevealed,
       order:state.order, orderChecked:state.orderChecked, _shuffled:!!state._shuffled,
       combo:state.combo, maxCombo:state.maxCombo, sessionXp:state.sessionXp, wrongConcepts:state.wrongConcepts
-    } : {active:false};
+    };
   });
 }
 function restoreProgress(p){
@@ -904,20 +909,26 @@ function rReview(){
 function revealReview(){
   const pad=document.getElementById('rpad');
   state.retrieveText=pad.value; state.retrieveRevealed=true;
+  // 자동 인식은 채점 열기 시 1회만 — 이후 자유롭게 체크/해제
+  const t=state.retrieveText.replace(/\s/g,"");
+  state.reviewQueue.forEach(id=>{ const k=RETRIEVE_KEYS.find(x=>x.id===id); if(k&&k.words.some(w=>t.includes(w)))state.reviewChecks[id]=true; });
   render();
 }
 function paintReviewChecklist(){
   const area=document.getElementById('rvCheckArea'); if(!area)return;
-  const t=state.retrieveText.replace(/\s/g,"");
-  state.reviewQueue.forEach(id=>{ const k=RETRIEVE_KEYS.find(x=>x.id===id); if(k&&k.words.some(w=>t.includes(w)))state.reviewChecks[id]=true; });
   area.innerHTML=`<p class="hint" style="margin-top:16px">방금 쓴 내용과 비교해 <b>실제로 떠올린 개념</b>을 체크하세요. (자동 인식 + 직접 체크)</p>
     <div class="checklist">${state.reviewQueue.map(id=>{const k=RETRIEVE_KEYS.find(x=>x.id===id);return `
-      <div class="ck ${state.reviewChecks[id]?'hit':''}" onclick="toggleReviewCk('${id}')">
+      <div class="ck ${state.reviewChecks[id]?'hit':''}" data-id="${id}" onclick="toggleReviewCk('${id}')">
         <div class="box">✓</div><div class="cktx"><b>${k.label}</b><span>${k.hint}</span></div>
       </div>`;}).join('')}</div>`;
   const b=document.getElementById('rvNext'); if(b)b.disabled=false;
 }
-function toggleReviewCk(id){ state.reviewChecks[id]=!state.reviewChecks[id]; render(); }
+// 전체 render() 대신 클래스만 토글 → 스크롤 점프 없음 + 자동인식 재덮어쓰기 방지
+function toggleReviewCk(id){
+  state.reviewChecks[id]=!state.reviewChecks[id];
+  const el=document.querySelector(`.ck[data-id="${id}"]`);
+  if(el)el.classList.toggle('hit',state.reviewChecks[id]);
+}
 function finishReview(){
   const tk=todayKey(); let hit=0;
   Store.patch(p=>{
@@ -1148,8 +1159,11 @@ function rStage3(){
     <div id="checkArea"></div>
     <div class="feedline" id="s3feed"></div>
     <div class="actions">
-      <button class="btn btn-ghost" onclick="go('stage2')">← 뒤로</button>
-      <button class="btn btn-primary grow" id="s3next" ${revealed?'':'disabled'} onclick="finishStage3()">세부 파기 →</button>
+      ${state.practice
+        ? `<button class="btn btn-ghost" onclick="exitPractice()">← 결과로</button>
+           <button class="btn btn-primary grow" id="s3next" ${revealed?'':'disabled'} onclick="exitPractice()">연습 완료 ✓</button>`
+        : `<button class="btn btn-ghost" onclick="go('stage2')">← 뒤로</button>
+           <button class="btn btn-primary grow" id="s3next" ${revealed?'':'disabled'} onclick="finishStage3()">세부 파기 →</button>`}
     </div>`;
   const pad=document.getElementById('pad');
   if(!revealed){ pad.addEventListener('input',()=>{state.retrieveText=pad.value;updateLiveCapture();}); updateLiveCapture(); }
@@ -1246,14 +1260,14 @@ function rStage5(){
   stageEl.innerHTML=`
     <div class="eyebrow"><span class="num">5</span> 전체 재구성 · 완성</div>
     <h2>목차만 보고 다시 엮는다</h2>
-    <p class="lead">마지막. 오른쪽 손잡이(⠿)를 잡고 <b>드래그</b>해 5단계를 올바른 학습 순서로 재배열하세요. 남에게 설명하듯 흐름을 복원하면, 진짜 내 것이 됩니다.</p>
+    <p class="lead">마지막. <b>▲▼ 버튼</b>으로 5단계를 올바른 학습 순서로 재배열하세요. (손잡이 ⠿를 끌어 옮겨도 됩니다) 남에게 설명하듯 흐름을 복원하면, 진짜 내 것이 됩니다.</p>
     <div class="seq" id="seq"></div>
     <div class="feedline" id="s5feed"></div>
     <div class="actions">
       <button class="btn btn-ghost" onclick="go('stage4')">← 뒤로</button>
-      <button class="btn btn-teal" id="s5check" onclick="checkOrder()">순서 확인</button>
-      <button class="btn btn-primary grow" id="s5next" disabled onclick="finishStage5()">결과 보기 →</button>
-    </div>`;
+      <button class="btn btn-teal grow" id="s5check" onclick="checkOrder()">순서 확인</button>
+    </div>
+    <button class="btn btn-primary" id="s5next" disabled onclick="finishStage5()" style="width:100%;margin-top:10px">결과 보기 →</button>`;
   if(!state._shuffled){
     let o=[0,1,2,3,4];
     do{ for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]];} }
@@ -1268,13 +1282,32 @@ function renderSeq(){
     const s=STEPS[stepIdx];
     let cls="seqitem";
     if(state.orderChecked)cls+= stepIdx===pos ? " right":" wrong";
+    const last=state.order.length-1;
     return `<div class="${cls}" data-step="${stepIdx}">
       <div class="rank">${pos+1}</div>
       <div class="lbl">${s.name}<small>${s.purpose}</small></div>
       ${state.orderChecked?'':'<div class="handle" aria-label="드래그하여 순서 변경" title="잡고 위아래로 끌어 옮기세요">⠿</div>'}
+      <div class="movebtns">
+        <button class="movebtn" ${pos===0?'disabled':''} onclick="moveStep(${pos},-1)" aria-label="위로 옮기기">▲</button>
+        <button class="movebtn" ${pos===last?'disabled':''} onclick="moveStep(${pos},1)" aria-label="아래로 옮기기">▼</button>
+      </div>
     </div>`;
   }).join("");
   if(!state.orderChecked) seq.querySelectorAll('.handle').forEach(el=>el.addEventListener('pointerdown',startDrag));
+}
+function moveStep(pos,dir){
+  const np=pos+dir;
+  if(np<0||np>=state.order.length)return;
+  const o=state.order.slice(); [o[pos],o[np]]=[o[np],o[pos]]; state.order=o;
+  if(state.orderChecked){
+    state.orderChecked=false;
+    const f=document.getElementById('s5feed'); if(f){f.textContent='';f.classList.remove('warn-t');}
+    const chk=document.getElementById('s5check'); if(chk)chk.disabled=false;
+    const nx=document.getElementById('s5next'); if(nx)nx.disabled=true;
+  }
+  try{Feel.ok();}catch(_){}
+  renderSeq();
+  snapshotProgress();
 }
 let DRAG=null;
 const REDUCE=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1367,7 +1400,7 @@ function checkOrder(){
   }
   const f=document.getElementById('s5feed');
   f.textContent= correct===5 ? "완벽 재구성! 입력→질문→인출→보완→재구성, 흐름을 손에 넣었습니다."
-                              : `${correct} / 5 자리 정답 — 초록은 맞고, 빨강은 드래그해 옮겨 보세요.`;
+                              : `${correct} / 5 자리 정답 — 초록은 맞고, 빨강은 ▲▼로 옮겨 다시 확인하세요.`;
   f.classList.toggle('warn-t',correct!==5);
   document.getElementById('s5check').disabled=(correct===5);
   document.getElementById('s5next').disabled=false;
@@ -1477,11 +1510,14 @@ function rResult(){
 function practiceRetrieve(){
   if(state.timer.id)clearInterval(state.timer.id);
   state.timer.running=false; clearTimerAlert();
+  // '다시 연습'은 단일 인출 드릴 — 4·5단계로 이어지지 않고, 재스탬프/SRS 재실행 안 함. 진도도 미기록.
+  state.practice=true; state.mode="practice";
   state.retrieveRevealed=false;
   state.retrieveText="";
   state.retrieveChecks=Array(RETRIEVE_KEYS.length).fill(false);
   go('stage3');
 }
+function exitPractice(){ state.practice=false; state.mode="full"; go('result'); }
 function toggleRep(k){
   state.reps[k]=!state.reps[k];
   rResult();
@@ -1554,7 +1590,7 @@ function toggleTimer(){
         clearInterval(state.timer.id);state.timer.running=false;
         const c=document.getElementById('clock');if(c)c.textContent="끝! ✎";
         const cap=document.querySelector('.timer .tcap b');if(cap)cap.textContent="백지에 꺼내볼 시간";
-        const b=document.getElementById('tbtn');if(b){b.textContent="다시 25분";b.onclick=()=>{clearTimerAlert();state.timer.sec=25*60;syncClock();};}
+        const b=document.getElementById('tbtn');if(b){b.textContent="다시 25분";b.onclick=()=>{clearTimerAlert();state.timer.sec=25*60;b.onclick=toggleTimer;syncClock();toggleTimer();};}
         fireTimerAlert();
       }
     },1000);
