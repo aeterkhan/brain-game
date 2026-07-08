@@ -3,6 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- 브랜디드(kids-lumo) 리다이렉트 · 되돌리기: MODE='off' 한 줄. test=?lumo=1만, on=전체(?stay=1 예외) -->
+<script>
+(function(){
+  var MODE='test'; /* 'off' | 'test' | 'on' */
+  if(MODE==='off') return;
+  var qs=location.search||'';
+  if(/[?&]stay=1(&|$)/.test(qs)) return;                       /* 구 페이지 강제 보기(비교용) */
+  var go=(MODE==='on')||(MODE==='test'&&/[?&]lumo=1(&|$)/.test(qs));
+  if(go) location.replace('../v2/kids-lumo/');
+})();
+</script>
 <title>백지의 방 키즈 · 기억 꺼내기 대작전</title>
 <meta name="description" content="초등학생을 위한 뇌과학 공부법 게임. 넣지 말고 꺼내기! 출석 도장을 모으며 좋은 공부 습관을 만들어요." />
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3Qgd2lkdGg9JzMyJyBoZWlnaHQ9JzMyJyByeD0nOCcgZmlsbD0nIzNGQTlGNScvPjx0ZXh0IHg9JzE2JyB5PScyMycgZm9udC1zaXplPScxNycgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtZmFtaWx5PSdzYW5zLXNlcmlmJyBmb250LXdlaWdodD0nNzAwJz7ssLg8L3RleHQ+PC9zdmc+" />
