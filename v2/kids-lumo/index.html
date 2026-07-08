@@ -228,6 +228,10 @@
   .timer.ringing{animation:ring 1s ease-in-out 5}
 
   .toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);max-width:92vw;background:var(--ink);color:#fff;padding:14px 22px;border-radius:16px;box-shadow:0 16px 40px -12px rgba(0,0,0,.5);font-family:'Jua',sans-serif;font-size:1.05rem;z-index:9999;display:flex;align-items:center;gap:10px;animation:toastIn .4s cubic-bezier(.2,.8,.2,1) both}
+  .inapphint{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9998;background:var(--ink);color:#fff;border-radius:14px;padding:11px 14px;font-family:'Gaegu',cursive;font-weight:700;font-size:.98rem;line-height:1.35;display:none;align-items:center;gap:10px;box-shadow:0 12px 34px -10px rgba(0,0,0,.5)}
+  .inapphint.on{display:flex}
+  .inapphint b{color:var(--yellow)}
+  .inapphint button{margin-left:auto;flex:none;background:rgba(255,255,255,.18);color:#fff;border:none;width:32px;height:32px;border-radius:9px;font-size:1rem;cursor:pointer}
   @keyframes toastIn{from{opacity:0;transform:translate(-50%,-14px)}to{opacity:1;transform:translate(-50%,0)}}
   .toast.out{animation:toastOut .5s ease forwards}
   @keyframes toastOut{to{opacity:0;transform:translate(-50%,-14px)}}
@@ -374,6 +378,10 @@
   </header>
 
   <main class="stage" id="stage"></main>
+  <div class="inapphint" id="inapphint">
+    <span>💡 매일 앱처럼 열려면 — <b>Safari로 열고 '홈 화면에 추가'</b> 하면 이어서 할 수 있어요</span>
+    <button onclick="dismissInApp()" aria-label="닫기">✕</button>
+  </div>
 
   <footer>
     <div>🧠 좋은 공부 습관은 어릴 때부터! 매일 한 판씩 도장을 모아요.</div>
@@ -758,7 +766,12 @@ function bootApp(){
   restoreProgress(Store.load());
   state.screen='home';
   render();
+  maybeInAppHint();
 }
+/* 인앱 웹뷰(스레드 등) 감지 → 1회성 부모용 힌트: Safari로 열어 '홈 화면에 추가'(설치 기반 재방문 유도) */
+function isInAppWebview(){ var u=navigator.userAgent||""; return /Instagram|Barcelona|Threads|FBAN|FBAV|FB_IAB|Line\/|KAKAOTALK|NAVER|DaumApps/i.test(u); }
+function dismissInApp(){ try{localStorage.setItem("baekji.inapp.hinted","1");}catch(e){} var el=document.getElementById("inapphint"); if(el)el.classList.remove("on"); }
+function maybeInAppHint(){ try{ if(isInAppWebview() && !localStorage.getItem("baekji.inapp.hinted")){ var el=document.getElementById("inapphint"); if(el)el.classList.add("on"); } }catch(e){} }
 function startFull(){ try{if(window.bx)bx('game_start');}catch(e){}
   clearSession(); newQuizRound();
   state.mode="full"; state.resumed=false; state._resumeScreen=null;

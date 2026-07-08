@@ -684,6 +684,11 @@ function exitDemo(){
 
 /* ============ export: report card PNG ============ */
 function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+/* Web Share 폴백 — 인앱 웹뷰(Threads WKWebView)는 download 속성을 무시하므로 공유 시트로 저장/캘린더추가 */
+var _shareBlob=null, _shareName="";
+function canShareFiles(){ try{ return !!(navigator.canShare && navigator.canShare({files:[new File([new Blob(["x"],{type:"text/plain"})],"x.txt",{type:"text/plain"})]})); }catch(e){ return false; } }
+function doShare(){ if(!_shareBlob)return; try{ var f=new File([_shareBlob],_shareName,{type:_shareBlob.type}); if(navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f],title:"백지의 방 — 부모 리포트"}).catch(function(){}); } }catch(e){} }
+function shareBtn(label){ return canShareFiles() ? '<button class="btn mint" onclick="doShare()" style="margin-bottom:8px">📤 '+label+'</button>' : ''; }
 function exportCard(){
   track("report_export");
   var m = calcMetrics(currentData());
@@ -736,13 +741,17 @@ function exportCard(){
   x.fillStyle="#B7B1A5"; x.font="600 26px "+F;
   x.fillText("감시가 아니라 축하를 · 원리는 검증, 형태는 검증 중 · baekji", 72, 1310);
 
-  var url=c.toDataURL("image/png");
-  $("#share-body").innerHTML =
-    '<div class="shead"><h3>주간 리포트 카드</h3><button class="xbtn" onclick="closeModal(\'share\')">닫기</button></div>'
-    +'<img src="'+url+'" alt="주간 리포트 카드">'
-    +'<div class="hint">사진을 길게 눌러 저장하거나, 아래 버튼으로 내려받으세요</div>'
-    +'<a class="btn mint" href="'+url+'" download="baekji-weekly-report.png" style="text-decoration:none">이미지 내려받기</a>';
-  $("#share").classList.add("on");
+  c.toBlob(function(blob){
+    if(blob){ _shareBlob=blob; _shareName="baekji-weekly-report.png"; }
+    var url=c.toDataURL("image/png");
+    $("#share-body").innerHTML =
+      '<div class="shead"><h3>주간 리포트 카드</h3><button class="xbtn" onclick="closeModal(\'share\')">닫기</button></div>'
+      +'<img src="'+url+'" alt="주간 리포트 카드">'
+      +shareBtn("공유·저장 (사진첩/파일)")
+      +'<div class="hint">'+(canShareFiles()?'공유하기로 사진첩·파일에 저장하거나, ':'사진을 길게 눌러 저장하거나, ')+'아래 버튼으로 내려받으세요</div>'
+      +'<a class="btn line" href="'+url+'" download="baekji-weekly-report.png" style="text-decoration:none">이미지 내려받기</a>';
+    $("#share").classList.add("on");
+  }, "image/png");
 }
 
 /* ============ export: ics ============ */
@@ -769,12 +778,14 @@ function downloadIcs(){
   var ics=L.join("\r\n");
   var dataUrl="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics);
   var blobUrl=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
-  // iOS Safari는 blob 다운로드를 무시하므로, 모달에 data: 링크(추가 시트)+파일 폴백을 함께 제시
+  _shareBlob=new Blob([ics],{type:"text/calendar"}); _shareName="baekji-review.ics";
+  // 인앱 웹뷰(WKWebView)는 download를 무시 → 공유 시트 우선, data:링크·파일 폴백 병행
   $("#share-body").innerHTML =
     '<div class="shead"><h3>복습일 캘린더</h3><button class="xbtn" onclick="closeModal(\'share\')">닫기</button></div>'
-    +'<p style="font-size:.88rem;margin-bottom:8px">다가오는 복습일 <b>'+evts.length+'개</b>를 캘린더에 추가해요. 다음 복습: <b>'+fmtMD(evts[0].date)+'</b></p>'
-    +'<a class="btn mint" href="'+dataUrl+'" download="baekji-review.ics" style="text-decoration:none">캘린더에 추가 (.ics)</a>'
-    +'<div class="hint" style="margin:8px 0">아이폰: 열리면 \'추가\'를 눌러 넣어요 · 안 열리면 아래로 저장</div>'
+    +'<p style="font-size:.88rem;margin-bottom:8px">다가오는 복습일 <b>'+evts.length+'개</b> · 다음 복습: <b>'+fmtMD(evts[0].date)+'</b></p>'
+    +shareBtn("캘린더에 추가·공유")
+    +'<a class="btn '+(canShareFiles()?'line':'mint')+'" href="'+dataUrl+'" download="baekji-review.ics" style="text-decoration:none">.ics로 열기</a>'
+    +'<div class="hint" style="margin:8px 0">'+(canShareFiles()?'공유하기 → 캘린더 앱에서 추가하세요':'열리면 \'추가\', 안 열리면 파일로 저장')+'</div>'
     +'<a class="btn line" href="'+blobUrl+'" download="baekji-review.ics" style="text-decoration:none">파일로 저장</a>';
   $("#share").classList.add("on");
 }

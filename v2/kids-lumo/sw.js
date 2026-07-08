@@ -4,7 +4,7 @@
      → 웹에서 배포한 업데이트가 앱을 열 때 그 즉시 반영됩니다.
    - 오프라인이면 마지막으로 캐시된 버전으로 끊김 없이 동작.
    scope 는 이 파일 위치(/v2/kids/) 이하로 한정되어 다른 버전엔 영향이 없습니다. */
-const CACHE = 'baekji-kids-lumo-v3';
+const CACHE = 'baekji-kids-lumo-v4';
 const ASSETS = [
   './',
   './index.html',
