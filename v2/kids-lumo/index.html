@@ -56,16 +56,21 @@
   html,body{height:100%}
   body{
     -webkit-tap-highlight-color:transparent;
-    font-family:'Gaegu','Jua',system-ui,sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard Variable',Pretendard,
+      'Noto Sans KR','Malgun Gothic','Segoe UI',system-ui,sans-serif;
     background:
       radial-gradient(900px 480px at 85% -8%, #FFE9C2 0%, transparent 60%),
       radial-gradient(720px 420px at -8% 108%, #D9F0FF 0%, transparent 58%),
       var(--bg);
     color:var(--ink);
     -webkit-font-smoothing:antialiased;
-    line-height:1.55;
+    line-height:1.72;
     overflow-x:hidden;
     font-size:18px;
+    font-weight:500;              /* 아동 본문은 한 단계 굵게 읽는 편이 눈이 덜 피로하다 */
+    letter-spacing:-.004em;
+    word-break:keep-all;          /* 어절 단위로만 줄바꿈 */
+    overflow-wrap:break-word;     /* 단 한 어절이 화면보다 길면 그때만 끊는다 */
   }
   .wrap{max-width:720px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));min-height:100%;display:flex;flex-direction:column}
   .center{text-align:center}
@@ -96,12 +101,13 @@
   @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   .eyebrow{font-family:'Jua',sans-serif;font-size:.95rem;color:#fff;font-weight:400;margin-bottom:12px;display:inline-flex;align-items:center;gap:8px;background:var(--blue);padding:6px 14px;border-radius:99px}
   .eyebrow .num{background:#fff;color:var(--blue);border-radius:99px;width:22px;height:22px;display:grid;place-items:center;font-size:.85rem}
-  h1{font-family:'Jua',sans-serif;font-size:1.85rem;line-height:1.3;margin-bottom:12px;color:var(--ink)}
-  h2{font-family:'Jua',sans-serif;font-size:1.4rem;line-height:1.3;margin-bottom:10px;color:var(--ink)}
-  p.lead{font-size:1.18rem;margin-bottom:8px}
-  .hint{font-size:1.02rem;color:var(--ink-soft)}
+  h1{font-family:'Jua',sans-serif;font-weight:400;font-size:1.9rem;line-height:1.34;margin-bottom:12px;color:var(--ink);letter-spacing:-.01em;text-wrap:balance}
+  h2{font-family:'Jua',sans-serif;font-weight:400;font-size:1.45rem;line-height:1.34;margin-bottom:10px;color:var(--ink);letter-spacing:-.01em;text-wrap:balance}
+  p.lead{font-size:1.14rem;line-height:1.75;margin-bottom:10px;max-width:34em;text-wrap:pretty}
+  .hint{font-size:1.02rem;line-height:1.7;color:var(--ink-soft);max-width:34em}
   b.hl{color:var(--coral)}
-  b.hlb{color:var(--blue)}
+  b,strong{font-weight:700}
+  b.hlb{color:var(--blue);font-weight:700}
   b.hlg{color:var(--green)}
 
   /* ---------- intro ---------- */
@@ -144,9 +150,9 @@
 
   /* ---------- quiz ---------- */
   .q{margin-bottom:18px;background:var(--card-2);border:2px solid var(--line);border-radius:18px;padding:16px}
-  .q-stem{font-family:'Jua',sans-serif;font-size:1.2rem;margin-bottom:12px;display:flex;gap:9px}
+  .q-stem{font-family:'Jua',sans-serif;font-weight:400;font-size:1.22rem;line-height:1.5;margin-bottom:13px;display:flex;gap:9px;letter-spacing:-.008em;text-wrap:pretty}
   .q-stem .qn{color:var(--blue);flex:none}
-  .opt{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fff;border:3px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;font:inherit;font-size:1.08rem;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
+  .opt{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fff;border:3px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;font:inherit;font-size:1.06rem;font-weight:500;line-height:1.6;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
   @media(hover:hover){.opt:hover{border-color:var(--blue)}}
   .opt:active{transform:scale(.98)}
   .opt:disabled{cursor:default}
@@ -155,7 +161,7 @@
   .opt.correct .mk{background:var(--green);color:#fff}
   .opt.wrong{background:var(--coral-wash);border-color:var(--coral)}
   .opt.wrong .mk{background:var(--coral);color:#fff}
-  .explain{font-size:1.02rem;background:#fff;border:2px dashed var(--green);border-radius:13px;padding:11px 14px;margin-top:2px;animation:rise .3s both}
+  .explain{font-size:1.02rem;line-height:1.72;background:#fff;border:2px dashed var(--green);border-radius:13px;padding:12px 15px;margin-top:2px;animation:rise .3s both;text-wrap:pretty}
   .explain.bad{border-color:var(--coral)}
   .explain .ee{font-size:1.2rem;margin-right:4px}
 
