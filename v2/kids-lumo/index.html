@@ -176,6 +176,10 @@
     background:repeating-linear-gradient(#fff 0 36px, var(--blue-wash) 36px 37px);background-attachment:local;
   }
   .paperpad:focus{outline:none;border-color:var(--blue)}
+  /* 키보드 포커스는 항상 보이게. 마우스 클릭에는 안 뜬다(:focus-visible) */
+  :focus-visible{outline:3px solid var(--blue-deep);outline-offset:3px}
+  .paperpad:focus-visible{outline:3px solid var(--blue-deep);outline-offset:2px;border-color:var(--blue)}
+  .flip:focus-visible,.ck:focus-visible{outline-offset:4px;border-radius:16px}
   .paperpad[readonly]{opacity:.92;cursor:default}
   .checklist{display:grid;gap:10px;margin-top:6px}
   .ck{display:flex;align-items:center;gap:12px;background:var(--card-2);border:3px solid var(--line);border-radius:15px;padding:12px 14px;cursor:pointer;transition:.18s}
@@ -883,7 +887,7 @@ function paintReviewChecklist(){
   const area=document.getElementById('rvCheckArea'); if(!area)return;
   area.innerHTML=`<p class="hint" style="margin-top:16px">진짜 떠올린 작전을 콕 체크해요! (자동 인식 + 직접 체크)</p>
     <div class="checklist">${state.reviewQueue.map(id=>{const k=RETRIEVE_KEYS.find(x=>x.id===id);return `
-      <div class="ck ${state.reviewChecks[id]?'hit':''}" data-id="${id}" onclick="toggleReviewCk('${id}')">
+      <div class="ck ${state.reviewChecks[id]?'hit':''}" data-id="${id}" onclick="toggleReviewCk('${id}')" tabindex="0" role="checkbox" aria-checked="${state.reviewChecks[id]?'true':'false'}" onkeydown="kbd(event,this)">
         <div class="box">✓</div><div class="cktx"><b>${k.emoji} ${k.label}</b><span>${k.hint}</span></div>
       </div>`;}).join('')}</div>`;
   const b=document.getElementById('rvNext'); if(b)b.disabled=false;
@@ -957,7 +961,7 @@ function rStage1(){
     </div>`;
   const c=document.getElementById('cards');
   c.innerHTML=STEPS.map((s,i)=>`
-    <div class="flip ${state.seen.has(i)?'on seen':''}" data-i="${i}" onclick="flip(${i})">
+    <div class="flip ${state.seen.has(i)?'on seen':''}" data-i="${i}" onclick="flip(${i})" tabindex="0" role="button" aria-label="${i+1}번 작전 카드 뒤집기" onkeydown="kbd(event,this)">
       <div class="flip-inner">
         <div class="face front">
           <div class="fe">${s.emoji}</div>
@@ -1139,12 +1143,16 @@ function paintChecklist(){
 function renderChecklist(){
   const list=document.getElementById('cklist');
   list.innerHTML=RETRIEVE_KEYS.map((k,i)=>`
-    <div class="ck ${state.retrieveChecks[i]?'hit':''}" data-i="${i}" onclick="toggleCk(${i})">
+    <div class="ck ${state.retrieveChecks[i]?'hit':''}" data-i="${i}" onclick="toggleCk(${i})" tabindex="0" role="checkbox" aria-checked="${state.retrieveChecks[i]?'true':'false'}" onkeydown="kbd(event,this)">
       <div class="box">✓</div>
       <div class="cke">${k.emoji}</div>
       <div class="cktx"><b>${k.label}</b><span>${k.hint}</span></div>
     </div>`).join("");
   updateS3Feed();
+}
+/* div 로 만든 컨트롤을 Enter/Space 로 누를 수 있게 한다 */
+function kbd(e, el){
+  if(e.key==="Enter" || e.key===" " || e.key==="Spacebar"){ e.preventDefault(); el.click(); }
 }
 function toggleCk(i){
   state.retrieveChecks[i]=!state.retrieveChecks[i];
