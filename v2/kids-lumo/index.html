@@ -339,6 +339,9 @@
   .duebox{display:flex;align-items:center;gap:13px;margin:16px 0;padding:15px 16px;border-radius:18px;background:var(--coral-wash);border:2px solid var(--coral);cursor:pointer;transition:transform .12s}
   .duebox:active{transform:scale(.98)}
   .duebox.done{background:var(--green-wash);border-color:var(--green);cursor:default}
+  /* 첫 방문 — 아무것도 안 한 아이에게 완료를 축하하지 않는다 */
+  .duebox.first{background:var(--card-2);border-color:var(--line);cursor:default}
+  .duebox.first .dueico{background:var(--yellow)}
   .duebox .dueico{width:46px;height:46px;flex:none;border-radius:13px;background:var(--coral);display:grid;place-items:center;font-size:1.5rem}
   .duebox.done .dueico{background:var(--green)}
   .duebox .duetx{flex:1}
@@ -828,6 +831,9 @@ function rHome(){
         <div class="dueico">✏️</div>
         <div class="duetx"><b>친구 ${due.length}명이 기다려요! 👋</b><span>다시 꺼내주면 기억이 안 도망가요.</span></div>
         <div class="duego">복습 →</div>
+      </div>`:(st.total===0 && p.xp===0)?`<div class="duebox first">
+        <div class="dueico">🌱</div>
+        <div class="duetx"><b>아직 꺼낸 기억이 없어요</b><span>한 판 끝내면 여기에 복습할 친구들이 모여요.</span></div>
       </div>`:`<div class="duebox done">
         <div class="dueico">🎉</div>
         <div class="duetx"><b>오늘 복습 끝!</b><span>새 판을 돌리거나, 내일 또 만나요.</span></div>
