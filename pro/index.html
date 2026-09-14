@@ -40,7 +40,10 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,246,238,.92);backdro
 .protobar{background:#3A3630;color:#F5EFE3;text-align:center;font-size:.74rem;padding:7px 12px;letter-spacing:.2px}
 .protobar b{color:var(--yellow)}
 .demobar{background:var(--yellow-bg);border-bottom:1px solid #F0DFAE;text-align:center;font-size:.78rem;padding:8px 12px;color:#8A6D1F}
+.gracebar{background:#FDF0E8;border-bottom:1px solid #F2D2BC;text-align:center;font-size:.78rem;padding:9px 12px;color:#9A5A2B;font-weight:700}
+.mnote{margin-top:12px;background:#F7F3E9;border:1px solid #EBE4D6;border-radius:10px;padding:11px 12px;font-size:.8rem;line-height:1.5;color:#5C574E}
 .demobar button{font-weight:700;text-decoration:underline;color:#8A6D1F;font-size:.78rem}
+.gracebar button{font-weight:800;text-decoration:underline;color:#9A5A2B;font-size:.78rem}
 
 /* ---------- sections ---------- */
 main{padding-top:18px}
@@ -181,7 +184,7 @@ section{margin-bottom:22px}
 </head>
 <body>
 
-<div class="protobar">⚗️ <b>프로토타입</b> — 실제 결제가 일어나지 않는 검증용 화면입니다</div>
+<div class="protobar" id="protobar" style="display:none">⚗️ <b>프로토타입</b> — 실제 결제가 일어나지 않는 검증용 화면입니다</div>
 <header>
   <div class="hbar">
     <div class="brand">백지의 방<small>부모 리포트</small></div>
@@ -190,6 +193,7 @@ section{margin-bottom:22px}
     <button class="gearbtn" id="btn-manage" onclick="openManage()">구독 관리</button>
   </div>
 </header>
+<div class="gracebar" id="gracebar" style="display:none"></div>
 <div class="demobar" id="demobar" style="display:none">
   📋 지금 보시는 것은 <b>샘플 데이터</b>입니다 · <button onclick="exitDemo()">샘플 끄기</button>
 </div>
@@ -212,16 +216,17 @@ section{margin-bottom:22px}
     <div class="nosell"><b>팔지 않는 것</b> — 원점수·오답 로그·실시간 감시·랭킹은 유료여도 제공하지 않습니다. 아이의 성장을 축하하는 도구이지, 감시하는 도구가 아닙니다.</div>
     <div class="plans">
       <button class="plan sel" id="plan-monthly" onclick="selectPlan('monthly')">
-        <div class="pn">월간</div><div class="pp">4,900원</div><div class="pd">무약정 · 언제든 해지</div>
+        <span class="off">런칭 프로모</span>
+        <div class="pn">월간</div><div class="pp"><span style="text-decoration:line-through;color:var(--soft);font-weight:600;font-size:.68em">7,900원</span> 4,900원</div><div class="pd">무약정 · 언제든 해지</div>
       </button>
       <button class="plan" id="plan-yearly" onclick="selectPlan('yearly')">
-        <span class="off">33% 할인</span>
+        <span class="off">가장 저렴</span>
         <div class="pn">연간</div><div class="pp">39,000원</div><div class="pd">월 3,250원 꼴</div>
       </button>
     </div>
     <button class="btn mint" id="cta-trial" onclick="startTrial()" style="margin-top:8px">7일 무료 체험 시작 — 결제 정보 없이</button>
     <button class="btn line" id="cta-buy" onclick="openCheckout()" style="margin-top:9px">바로 구독하기</button>
-    <div class="smallprint">무약정 · 언제든 해지 · 체험 종료 후 자동 결제 없음<br>⚗️ 프로토타입: 실제 결제가 일어나지 않습니다</div>
+    <div class="smallprint">얼리 프로모가(월 4,900원)는 런칭 한정 · 평생가 아님 · 무약정 · 언제든 해지 · 체험 종료 후 자동 결제 없음<br>⚗️ 프로토타입: 실제 결제가 일어나지 않습니다</div>
   </div>
 </div>
 
@@ -246,7 +251,12 @@ var KID_PROFILE_KEY = "baekji.kids.v1.profile";  // 읽기 전용 — 아이 앱
 var KID_STAMP_KEY   = "baekji.kids.stamps";      // 읽기 전용
 var PRO_KEY = "baekji.pro.v1";
 var EVT_KEY = "baekji.pro.events";
+var TRIAL_USED_KEY = "baekji.trial.used.v1";   // E1 예외 — 체험은 1회 한정
 var TRIAL_DAYS = 7;
+var GRACE_DAYS = 3;                            // E9 — 갱신 실패 유예
+/* E10 — 목업 결제 경로 플래그. 실연동 전환 시 false 로 내리면
+   가짜 승인·프로토타입 초기화·상태 시뮬레이션·프로토타입 배너가 한꺼번에 차단된다. */
+var PROTO_PAY = true;
 
 var CONCEPTS = [
   {id:"shelf",    emoji:"🗺️", label:"큰 그림 먼저 보기"},
@@ -351,34 +361,105 @@ function calcMetrics(d){
 }
 
 /* ============ entitlement ============ */
+/* 상태: none / trial / active / canceled(해지 예약, 잔여기간 이용) / grace(갱신 실패 유예) / expired
+   전이 규칙은 docs/SPEC_ENTITLEMENT_v1.md §2 표를 따른다. */
 function getPro(){
   var p=null;
   try{ p = JSON.parse(localStorage.getItem(PRO_KEY)); }catch(_){ p=null; }
   if(!p) return {status:"none"};
-  if(p.status==="trial" && Date.now()>p.trialEnds){ p={status:"expired", was:"trial"}; savePro(p); }
+  var now=Date.now();
+  if(p.status==="trial" && now>p.trialEnds){ p={status:"expired", was:"trial"}; savePro(p); }
+  else if(p.status==="canceled" && now>p.periodEnd){ p={status:"expired", was:"canceled"}; savePro(p); }
+  else if(p.status==="grace" && now>p.graceEnds){ p={status:"expired", was:"grace"}; savePro(p); }
   return p;
 }
 function savePro(p){ try{ localStorage.setItem(PRO_KEY, JSON.stringify(p)); }catch(_){} }
-function isPro(p){ return p.status==="active" || (p.status==="trial" && Date.now()<p.trialEnds); }
+/* 해지해도 결제한 기간은 끝까지 쓴다. 갱신에 실패해도 유예 동안은 막지 않는다. */
+function isPro(p){
+  var now=Date.now();
+  if(p.status==="active")   return true;
+  if(p.status==="trial")    return now < p.trialEnds;
+  if(p.status==="canceled") return now < p.periodEnd;
+  if(p.status==="grace")    return now < p.graceEnds;
+  return false;
+}
 function trialDaysLeft(p){ return Math.max(0, Math.ceil((p.trialEnds-Date.now())/86400000)); }
+function daysLeftTo(ts){ return Math.max(0, Math.ceil((ts-Date.now())/86400000)); }
+function fmtDay(ts){ var d=new Date(ts); return d.getFullYear()+"년 "+(d.getMonth()+1)+"월 "+d.getDate()+"일"; }
 
+/* E1 — 체험은 1회. localStorage 를 지우면 우회되지만, 계정을 만들지 않는 쪽의 대가로 수용한다. */
+function trialUsed(){ try{ return !!localStorage.getItem(TRIAL_USED_KEY); }catch(_){ return false; } }
 function startTrial(){
+  if(trialUsed()){
+    track("trial_blocked");
+    alertBar("무료 체험은 한 번만 쓸 수 있어요. 플랜을 확인해 주세요.");
+    return;
+  }
   var now=Date.now();
   savePro({status:"trial", startedAt:now, trialEnds:now+TRIAL_DAYS*86400000});
+  try{ localStorage.setItem(TRIAL_USED_KEY, String(now)); }catch(_){}
   track("trial_start");
   closeModal("paywall");
   renderAll();
   window.scrollTo({top:0});
 }
+
+/* E5 — 해지. active 는 기간 만료 예약(canceled), 체험·유예 중이면 즉시 종료. */
 function cancelSub(){
-  savePro({status:"none", canceledAt:Date.now()});
-  track("cancel");
+  var p=getPro();
+  track("cancel_request",{from:p.status});
+  if(p.status==="active"){
+    savePro({status:"canceled", plan:p.plan, method:p.method, startedAt:p.startedAt,
+             canceledAt:Date.now(), periodEnd: p.renewsAt || Date.now()});
+  } else {
+    savePro({status:"expired", was:p.status, canceledAt:Date.now()});
+  }
+  track("cancel_done");
+  closeModal("manage");
+  renderAll();
+}
+/* E6 — 재구독. 잔여 기간이 남은 해지 예약은 새 결제 없이 되돌린다. */
+function resumeSub(){
+  var p=getPro();
+  if(p.status!=="canceled" || Date.now()>=p.periodEnd) return;
+  savePro({status:"active", plan:p.plan, method:p.method, startedAt:p.startedAt||Date.now(), renewsAt:p.periodEnd});
+  track("resubscribe");
+  closeModal("manage");
+  renderAll();
+}
+/* E9 — 갱신 실패·복구. 실연동에서는 웹훅이 부르고, 지금은 시뮬레이션 버튼이 부른다. */
+function enterGrace(){
+  if(!PROTO_PAY) return;
+  var p=getPro();
+  if(p.status!=="active") return;
+  savePro({status:"grace", plan:p.plan, method:p.method, startedAt:p.startedAt,
+           renewsAt:p.renewsAt, graceEnds:Date.now()+GRACE_DAYS*86400000});
+  track("renewal_failed");
+  closeModal("manage");
+  renderAll();
+}
+function recoverGrace(){
+  var p=getPro();
+  if(p.status!=="grace") return;
+  var now=Date.now();
+  savePro({status:"active", plan:p.plan, method:p.method, startedAt:p.startedAt,
+           renewsAt: now + (p.plan==="yearly"?365:30)*86400000});
+  track("grace_recovered");
   closeModal("manage");
   renderAll();
 }
 function resetProto(){
-  try{ localStorage.removeItem(PRO_KEY); localStorage.removeItem(EVT_KEY); }catch(_){}
+  if(!PROTO_PAY) return;
+  try{ localStorage.removeItem(PRO_KEY); localStorage.removeItem(EVT_KEY); localStorage.removeItem(TRIAL_USED_KEY); }catch(_){}
   location.reload();
+}
+/* 모달을 띄우지 않고 알리는 얇은 바 — 브라우저 alert 은 쓰지 않는다. */
+function alertBar(msg){
+  var el=$("#gracebar");
+  if(!el) return;
+  el.innerHTML = msg;
+  el.style.display="block";
+  setTimeout(function(){ renderAll(); }, 3200);
 }
 
 /* ============ paywall / checkout ============ */
@@ -403,7 +484,7 @@ function openCheckout(){
 }
 function renderCheckout(){
   var price = selectedPlan==="monthly" ? 4900 : 39000;
-  var label = selectedPlan==="monthly" ? "월간 (무약정)" : "연간 (33% 할인)";
+  var label = selectedPlan==="monthly" ? "월간 얼리 프로모 (무약정)" : "연간 (월 3,250원 꼴)";
   $("#checkout-body").innerHTML =
     '<div class="shead"><h3>결제하기</h3><button class="xbtn" onclick="closeModal(\'checkout\')">닫기</button></div>'
     +'<div class="mrow"><span class="k">플랜</span><span class="v">부모 리포트 플러스 · '+label+'</span></div>'
@@ -413,8 +494,10 @@ function renderCheckout(){
     +  pmBtn("toss","토스페이","#E8F0FE","toss")
     +  pmBtn("card","신용·체크카드","#EFEFEF","💳")
     +'</div>'
-    +'<button class="btn mint" id="btn-pay" onclick="doPay()">테스트 결제하기 — 실제 결제 없음</button>'
-    +'<div class="smallprint">⚗️ 프로토타입 결제 시뮬레이션입니다. 카드번호 입력도, 과금도 없습니다.<br>실서비스: 토스페이먼츠 결제위젯 + 카카오페이 (웹 결제)</div>';
+    +'<button class="btn mint" id="btn-pay" onclick="doPay()">'+(PROTO_PAY?"테스트 결제하기 — 실제 결제 없음":"결제하기")+'</button>'
+    +(PROTO_PAY
+      ? '<div class="smallprint">⚗️ 프로토타입 결제 시뮬레이션입니다. 카드번호 입력도, 과금도 없습니다.<br>실서비스: 토스페이먼츠 결제위젯 + 카카오페이 (웹 결제)</div>'
+      : '<div class="smallprint">결제 후 아이 기기에서 입력할 코드를 보내드립니다.</div>');
 }
 function pmBtn(id,label,bg,badge){
   var sel = payMethod===id ? " sel":"";
@@ -425,6 +508,11 @@ function pmBtn(id,label,bg,badge){
 function pickPm(id){ payMethod=id; renderCheckout(); }
 function doPay(){
   track("purchase_attempt",{plan:selectedPlan, method:payMethod});
+  if(!PROTO_PAY){
+    /* 실연동: POST /checkout -> 결제창 리다이렉트. 프로바이더 택1 후 배선한다.
+       docs/SPEC_ENTITLEMENT_v1.md §7 / docs/PAYMENT_INTEGRATION_v1.md §4 */
+    return;
+  }
   $("#checkout-body").innerHTML =
     '<div class="paying"><div class="spin"></div><div style="font-weight:800">결제 승인 중…</div>'
     +'<div style="font-size:.78rem;color:var(--soft);margin-top:4px">프로토타입 시뮬레이션</div></div>';
@@ -443,11 +531,38 @@ function finishPay(){
 }
 
 /* ============ manage ============ */
+/* 상태마다 다음 한 걸음이 하나씩만 보이게 한다. */
+function manageActions(p){
+  if(p.status==="canceled" && isPro(p)){
+    return '<div class="mnote">'+fmtDay(p.periodEnd)+'까지는 그대로 보실 수 있어요. 그 뒤 자동으로 무료로 돌아갑니다.</div>'
+      +'<button class="btn mint" id="btn-resume" onclick="resumeSub()" style="margin-top:10px">해지 취소하고 계속 이용</button>';
+  }
+  if(p.status==="grace" && isPro(p)){
+    return '<div class="mnote">결제가 확인되지 않았어요. '+daysLeftTo(p.graceEnds)+'일 안에 결제수단을 확인해 주세요. 그동안 리포트는 그대로 열려 있습니다.</div>'
+      +'<button class="btn mint" id="btn-recover" onclick="recoverGrace()" style="margin-top:10px">결제수단 확인하기</button>';
+  }
+  if(p.status==="active"){
+    return '<button class="btn danger" id="btn-cancel" onclick="cancelSub()" style="margin-top:14px">구독 해지 (기간 끝까지 이용)</button>';
+  }
+  if(p.status==="trial" && isPro(p)){
+    return '<button class="btn danger" id="btn-cancel" onclick="cancelSub()" style="margin-top:14px">무료 체험 중단</button>';
+  }
+  return '';
+}
+/* E10 — 여기 있는 것은 전부 프로토타입 전용. PROTO_PAY=false 면 통째로 사라진다. */
+function protoTools(p){
+  var sim = (p.status==="active")
+    ? '<button class="btn line" onclick="enterGrace()" style="margin-top:6px">[프로토] 갱신 실패 시뮬레이션</button>' : '';
+  return sim
+    +'<button class="btn danger" onclick="resetProto()" style="margin-top:6px">프로토타입 초기화 (구독·이벤트 기록 삭제)</button>';
+}
 function openManage(){
   var p=getPro();
   var statusTxt = p.status==="active" ? "플러스 구독 중"
     : (p.status==="trial" && isPro(p)) ? "무료 체험 중 (D-"+trialDaysLeft(p)+")"
-    : p.status==="expired" ? "체험 종료 (미결제)"
+    : (p.status==="canceled" && isPro(p)) ? "해지 예약 — "+fmtDay(p.periodEnd)+"까지 이용"
+    : (p.status==="grace" && isPro(p)) ? "결제 확인 필요 (D-"+daysLeftTo(p.graceEnds)+")"
+    : p.status==="expired" ? (p.was==="trial" ? "체험 종료 (미결제)" : "이용 종료")
     : "무료";
   var planTxt = p.plan==="yearly" ? "연간 39,000원" : p.plan==="monthly" ? "월간 4,900원" : "-";
   var evts=[]; try{ evts=JSON.parse(localStorage.getItem(EVT_KEY))||[]; }catch(_){}
@@ -458,9 +573,9 @@ function openManage(){
     +'<div class="mrow"><span class="k">플랜</span><span class="v">'+planTxt+'</span></div>'
     +'<div class="mrow"><span class="k">보고 있는 데이터</span><span class="v">'+(MODE==="demo"?"샘플":"이 기기의 실제 기록")+'</span></div>'
     +'<div class="mrow"><span class="k">계측 이벤트</span><span class="v" style="font-size:.74rem">'+evts.length+'건 · 최근: '+last3+'</span></div>'
-    +(isPro(p) ? '<button class="btn danger" id="btn-cancel" onclick="cancelSub()" style="margin-top:14px">구독 해지 (즉시, 무약정)</button>' : '')
+    +manageActions(p)
     +'<button class="btn line" onclick="closeModal(\'manage\');openPaywall(\'manage\')" style="margin-top:12px">플랜 보기</button>'
-    +'<button class="btn danger" onclick="resetProto()" style="margin-top:6px">프로토타입 초기화 (구독·이벤트 기록 삭제)</button>'
+    +(PROTO_PAY ? protoTools(p) : '')
     +'<div class="smallprint">아이의 학습 기록(baekji.kids.*)은 이 페이지가 절대 수정하지 않습니다.</div>';
   $("#manage").classList.add("on");
 }
@@ -652,8 +767,25 @@ function renderAll(){
   var pill = $("#pill-status");
   if(pro.status==="active"){ pill.textContent="플러스"; pill.className="pill active"; }
   else if(pro.status==="trial" && isPro(pro)){ pill.textContent="체험 D-"+trialDaysLeft(pro); pill.className="pill trial"; }
-  else if(pro.status==="expired"){ pill.textContent="체험 종료"; pill.className="pill"; }
+  else if(pro.status==="canceled" && isPro(pro)){ pill.textContent="해지 예약"; pill.className="pill trial"; }
+  else if(pro.status==="grace" && isPro(pro)){ pill.textContent="결제 확인"; pill.className="pill trial"; }
+  else if(pro.status==="expired"){ pill.textContent=pro.was==="trial" ? "체험 종료" : "이용 종료"; pill.className="pill"; }
   else { pill.textContent="무료"; pill.className="pill"; }
+
+  $("#protobar").style.display = PROTO_PAY ? "block" : "none";
+  /* E9 — 결제 문제는 부모의 문제다. 이 배너는 부모 화면에만 뜬다. */
+  var gb=$("#gracebar");
+  if(pro.status==="grace" && isPro(pro)){
+    gb.innerHTML = '결제가 확인되지 않았어요 · <b>'+daysLeftTo(pro.graceEnds)+'일</b> 안에 확인해 주세요 · '
+      +'<button onclick="openManage()">결제수단 보기</button>';
+    gb.style.display="block";
+  } else if(pro.status==="canceled" && isPro(pro)){
+    gb.innerHTML = '해지 예약됨 · <b>'+fmtDay(pro.periodEnd)+'</b>까지 이용할 수 있어요 · '
+      +'<button onclick="openManage()">해지 취소</button>';
+    gb.style.display="block";
+  } else {
+    gb.style.display="none";
+  }
 
   $("#demobar").style.display = MODE==="demo" ? "block" : "none";
 
