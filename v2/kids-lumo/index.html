@@ -308,6 +308,9 @@
   .btn-green{background:var(--green);color:var(--ink);box-shadow:0 6px 0 -1px #2FAE62}
   .btn-green:active{box-shadow:0 2px 0 -1px #2FAE62}
   .btn-ghost{background:#fff;color:var(--ink);border:3px solid var(--line)}
+  /* 쓰기 전에는 '정답 보기'를 조용하게. 쓰기 시작하면 원래 초록으로 돌아온다(레이아웃 이동 없음) */
+  .btn-green.quiet{background:#fff;color:var(--green-deep);box-shadow:inset 0 0 0 3px var(--line)}
+  .btn-green.quiet:active{box-shadow:inset 0 0 0 3px var(--line)}
   .grow{flex:1}
 
   footer{margin-top:20px;text-align:center;font-size:.92rem;color:var(--ink-soft);line-height:1.6}
@@ -1096,7 +1099,7 @@ function rStage3(){
     <div id="revealWrap">
       ${revealed?`<div class="reveal-note done">✅ <b>다 썼어요!</b> 이제 내가 떠올린 걸 아래에서 콕콕 체크해봐요.</div>`:
       `<div class="reveal-note">✏️ <b>아직 정답을 보면 안 돼요!</b> 베끼지 말고, 생각나는 만큼 먼저 써봐요.</div>
-       <button class="btn btn-green" id="revealBtn" onclick="revealRetrieve()">다 썼어요! 정답 보기 ▾</button>`}
+       <button class="btn btn-green quiet" id="revealBtn" onclick="revealRetrieve()">다 썼어요! 정답 보기 ▾</button>`}
     </div>
     <div id="checkArea"></div>
     <div class="feedline" id="s3feed"></div>
@@ -1120,6 +1123,9 @@ function updateLiveCapture(){
     `<span class="captx">${n>0?`${n}개 작전 찾았어요! 계속 꺼내봐요`:'기억나는 걸 써봐요!'}</span>`;
   if(n>state._capN){ Feel.ok(); }
   state._capN=n;
+  /* 한 글자라도 꺼내면 그때 '정답 보기'가 다음 행동으로 올라온다 */
+  const rb=document.getElementById('revealBtn');
+  if(rb) rb.classList.toggle('quiet', state.retrieveText.trim().length < 2);
 }
 function revealRetrieve(){
   const pad=document.getElementById('pad');
